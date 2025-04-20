@@ -1,0 +1,20 @@
+TUTORIAL INSTALASI APP DI HOSTING (ONLINE)
+
+https://www.youtube.com/watch?v=iuonWUmRAo0&ab_channel=Novinaldi
+
+TUTORIAL INSTAL APP DI PC (OFFLINE)
+
+https://www.youtube.com/watch?v=SRkm6h-f6nQ&ab_channel=NaufalRafif
+ERROR LOCALE NOT FOUND
+
+CARA 1
+https://www.youtube.com/watch?v=VzI3y1tCQNA&ab_channel=HariWicaksono
+
+CARA 2 
+NOTE: JIKA CARA 1 TIDAK BISA IKUTI CARA KE 2
+https://www.youtube.com/watch?v=1PMQGEx1_0c&t=76s&ab_channel=PHPMaster100million
+
+
+USER LOGIN ADMIN
+USERNAME:admin
+PASSWORD: 12345678
