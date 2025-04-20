@@ -17,14 +17,26 @@ class Manuser extends BaseController
     }
     public function index()
     {
+        // Build query from existing getUser method
+        $query = $this->userModel->getUser();
+        
+        // Setup pagination
+        $result = $this->setupPagination($query);
+        
         $data = [
-            'data' => $this->userModel->getUser()->getResult(),
+            'data' => $result['data'],
             'level_akses' => $this->session->nama_level,
             'dtmenu' => $this->tampil_menu($this->session->level),
             'dtsubmenu' => $this->tampil_submenu($this->session->level),
             'nama_menu' => 'Kelola Akun User',
-            'nama_submenu' => 'Kelola Akun User'
+            'nama_submenu' => 'Kelola Akun User',
+            // Add pagination data
+            'currentPage' => $result['pager']['currentPage'],
+            'perPage' => $result['pager']['perPage'],
+            'total' => $result['pager']['total'],
+            'totalPages' => $result['pager']['totalPages']
         ];
+        
         return view('admin/manuser', $data);
     }
     public function tambah()

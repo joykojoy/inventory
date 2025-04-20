@@ -27,13 +27,24 @@ class Barangkeluar extends BaseController
     }
     public function index()
     {
+        // Build query
+        $query = $this->barangkeluarModel->getBarangKeluar();
+        
+        // Setup pagination
+        $result = $this->setupPagination($query);
+        
         $data = [
-            'data' => $this->barangkeluarModel->getBarangKeluar()->getResult(),
+            'data' => $result['data'],
             'level_akses' => $this->session->nama_level,
             'dtmenu' => $this->tampil_menu($this->session->level),
             'dtsubmenu' => $this->tampil_submenu($this->session->level),
             'nama_menu' => 'Kelola Stock',
-            'nama_submenu' => 'Pegeluaran Barang'
+            'nama_submenu' => 'Pegeluaran Barang',
+            // Add pagination data
+            'currentPage' => $result['pager']['currentPage'],
+            'perPage' => $result['pager']['perPage'],
+            'total' => $result['pager']['total'],
+            'totalPages' => $result['pager']['totalPages']
         ];
         return view('admin/manbrgkeluar', $data);
     }

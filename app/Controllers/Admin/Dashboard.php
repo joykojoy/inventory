@@ -50,8 +50,8 @@ class Dashboard extends BaseController
         $dtmenu = $this->tampil_menu($user_level);
         $dtsubmenu = $this->tampil_submenu($user_level);
 
-        // Modified query to properly handle min stock and quantity
-        $readyStock = $this->barangModel->select('
+        // Build the query
+        $query = $this->barangModel->select('
                 barang.kode as kode_brg,
                 barang.nama as nama_brg,
                 barang.satuan,
@@ -61,28 +61,27 @@ class Dashboard extends BaseController
                 satuan.nama as nama_satuan,
                 group.nama as nama_group
             ')
-            ->join('stock', 'stock.kode_brg = barang.kode', 'left')  // Left join to get all items even without stock
+            ->join('stock', 'stock.kode_brg = barang.kode', 'left')
             ->join('satuan', 'satuan.id = barang.satuan')
             ->join('group', 'group.kode = barang.induk')
-            ->where('barang.status', 1)  // Only active items
-            ->orderBy('group.kode', 'ASC')
-            ->findAll();
+            ->where('barang.status', 1)
+            ->orderBy('group.kode', 'ASC');
 
-        // Transform the data to match the expected format
-        foreach ($readyStock as &$item) {
-            // Cast min_stok to integer
-            $item->min_stok = (int)$item->min_stok;
-            // Cast quantity to integer
-            $item->qtt = (int)$item->qtt;
-        }
-
+        // Setup pagination using the method from BaseController
+        $result = $this->setupPagination($query);
+        
         $data = [
             'title' => 'Dashboard',
             'nama_menu' => 'Dashboard',
             'nama_submenu' => 'Dashboard',
             'dtmenu' => $dtmenu,
             'dtsubmenu' => $dtsubmenu,
-            'dtstock' => $readyStock,
+            'dtstock' => $result['data'],
+            'currentPage' => $result['pager']['currentPage'],
+            'perPage' => $result['pager']['perPage'],
+            'total' => $result['pager']['total'],
+            'totalPages' => $result['pager']['totalPages'],
+            // ... existing dashboard data ...
             'total_barang' => $this->barangModel->where('status', 1)->countAllResults(),
             'total_barang_masuk' => $this->barangMasukModel->join('detil_brgmasuk', 'barangmasuk.no_faktur = detil_brgmasuk.no_faktur')
                                                           ->selectSum('detil_brgmasuk.qtt')

@@ -15,13 +15,25 @@ class Mangroup extends BaseController
     }
     public function index()
     {
+        // Build query using Query Builder
+        $query = $this->groupModel->select('*')
+                                 ->orderBy('nama', 'ASC');
+        
+        // Setup pagination
+        $result = $this->setupPagination($query);
+        
         $data = [
-            'data' => $this->groupModel->findAll(),
+            'data' => $result['data'],
             'level_akses' => $this->session->nama_level,
             'dtmenu' => $this->tampil_menu($this->session->level),
             'dtsubmenu' => $this->tampil_submenu($this->session->level),
             'nama_menu' => 'Master',
-            'nama_submenu' => 'Group Barang'
+            'nama_submenu' => 'Group Barang',
+            // Add pagination data
+            'currentPage' => $result['pager']['currentPage'],
+            'perPage' => $result['pager']['perPage'],
+            'total' => $result['pager']['total'],
+            'totalPages' => $result['pager']['totalPages']
         ];
         return view('admin/mangroup', $data);
     }

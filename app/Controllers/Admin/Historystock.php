@@ -68,7 +68,7 @@ class Historystock extends BaseController
             }
 
             $data = [
-                'data' => $result->getResult(),
+                'data' => $result->get()->getResult(), // Changed this line
                 'tglAwal' => $tglAwal,
                 'tglAkhir' => $tglAkhir
             ];

@@ -28,20 +28,29 @@ class Pesanan extends BaseController
 
     public function index()
     {
-        $readyStock = $this->stockModel->getReadyStock()->getResult();
+        // Build query
+        $query = $this->stockModel->getReadyStock();
+        
+        // Setup pagination
+        $result = $this->setupPagination($query);
         
         // Format the price for each item
-        foreach ($readyStock as $item) {
+        foreach ($result['data'] as $item) {
             $item->harga = (float)$item->harga;
         }
         
         $data = [
-            'data' => $readyStock,
+            'data' => $result['data'],
             'level_akses' => $this->session->nama_level,
             'dtmenu' => $this->tampil_menu($this->session->level),
             'dtsubmenu' => $this->tampil_submenu($this->session->level),
             'nama_menu' => 'Sales', 
-            'nama_submenu' => 'Pesanan'
+            'nama_submenu' => 'Pesanan',
+            // Add pagination data
+            'currentPage' => $result['pager']['currentPage'],
+            'perPage' => $result['pager']['perPage'],
+            'total' => $result['pager']['total'],
+            'totalPages' => $result['pager']['totalPages']
         ];
         
         return view('sales/index', $data);

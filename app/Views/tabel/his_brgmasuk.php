@@ -61,6 +61,9 @@
                 </tr>
             </tfoot>
         </table>
+        
+        <!-- Add pagination -->
+        <?= $this->include('shared_pages/pagination') ?>
     <?php else: ?>
         <div class="alert alert-info mt-3">
             Tidak ada data untuk ditampilkan.

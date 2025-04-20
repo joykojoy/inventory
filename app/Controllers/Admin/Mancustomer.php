@@ -15,13 +15,25 @@ class Mancustomer extends BaseController
     }
     public function index()
     {
+        // Build query using Query Builder
+        $query = $this->customerModel->select('*')
+                                    ->orderBy('nama', 'ASC');
+        
+        // Setup pagination
+        $result = $this->setupPagination($query);
+        
         $data = [
-            'data' => $this->customerModel->findAll(),
+            'data' => $result['data'],
             'level_akses' => $this->session->nama_level,
             'dtmenu' => $this->tampil_menu($this->session->level),
             'dtsubmenu' => $this->tampil_submenu($this->session->level),
             'nama_menu' => 'Kelola Customer',
-            'nama_submenu' => 'Kelola Customer'
+            'nama_submenu' => 'Kelola Customer',
+            // Add pagination data
+            'currentPage' => $result['pager']['currentPage'],
+            'perPage' => $result['pager']['perPage'],
+            'total' => $result['pager']['total'],
+            'totalPages' => $result['pager']['totalPages']
         ];
         return view('admin/mancustomer', $data);
     }

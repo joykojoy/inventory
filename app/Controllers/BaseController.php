@@ -103,4 +103,44 @@ abstract class BaseController extends Controller
         $timestamp = date('Y-m-d H:i:s');
         file_put_contents($debug_file, "[$timestamp] " . print_r($message, true) . "\n", FILE_APPEND);
     }
+
+    protected function setupPagination($query)
+    {
+        // Get current page from URL parameter
+        $currentPage = (int)($this->request->getGet('page') ?? 1);
+        $perPage = 3; // Items per page
+        
+        // Calculate offset (start from 0 for first page)
+        $offset = ($currentPage - 1) * $perPage;
+        
+        if ($query instanceof \CodeIgniter\Database\ResultInterface) {
+            $allData = $query->getResult();
+            $total = count($allData);
+            
+            // Remove +1 since header is not counted in data
+            $data = array_slice($allData, $offset, $perPage, true);
+        } else {
+            // For Query Builder instances
+            $total = $query->countAllResults(false);
+            
+            // Remove +1 from limit since header is not counted
+            $data = $query->limit($perPage)
+                         ->offset($offset)
+                         ->get()
+                         ->getResult();
+        }
+        
+        $totalPages = (int)ceil($total / $perPage);
+        
+        return [
+            'data' => $data,
+            'pager' => [
+                'currentPage' => $currentPage,
+                'perPage' => $perPage,
+                'total' => $total,
+                'totalPages' => $totalPages,
+                'offset' => $offset
+            ]
+        ];
+    }
 }

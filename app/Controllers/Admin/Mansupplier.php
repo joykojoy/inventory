@@ -15,13 +15,25 @@ class Mansupplier extends BaseController
     }
     public function index()
     {
+        // Build query using Query Builder
+        $query = $this->supplierModel->select('*')
+                                    ->orderBy('nama', 'ASC');
+        
+        // Setup pagination
+        $result = $this->setupPagination($query);
+        
         $data = [
-            'data' => $this->supplierModel->findAll(),
+            'data' => $result['data'],
             'level_akses' => $this->session->nama_level,
             'dtmenu' => $this->tampil_menu($this->session->level),
             'dtsubmenu' => $this->tampil_submenu($this->session->level),
             'nama_menu' => 'Kelola Supplier',
-            'nama_submenu' => 'Kelola Supplier'
+            'nama_submenu' => 'Kelola Supplier',
+            // Add pagination data
+            'currentPage' => $result['pager']['currentPage'],
+            'perPage' => $result['pager']['perPage'],
+            'total' => $result['pager']['total'],
+            'totalPages' => $result['pager']['totalPages']
         ];
         return view('admin/mansupplier', $data);
     }

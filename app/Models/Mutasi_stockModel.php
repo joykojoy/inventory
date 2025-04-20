@@ -25,24 +25,25 @@ class Mutasi_stockModel extends Model
         }
     }
 
-    public function getHisBrg($tglAwal, $tglAkhir)
+    public function getHisBrg($tglAwal = null, $tglAkhir = null)
     {
-        return $this->db->table('mutasi_stock')
-            ->select('
-                mutasi_stock.tgl,
-                mutasi_stock.kode_brg,
-                mutasi_stock.qtt_in,
-                mutasi_stock.qtt_out,
-                barang.nama as nama_brg,
-                CAST(COALESCE(barang.harga, 0) as DECIMAL(15,2)) as harga,
-                satuan.nama as nama_satuan
-            ')
-            ->join('barang', 'barang.kode = mutasi_stock.kode_brg')
-            ->join('satuan', 'satuan.id = barang.satuan')
-            ->where('DATE(mutasi_stock.tgl) >=', $tglAwal)
-            ->where('DATE(mutasi_stock.tgl) <=', $tglAkhir)
-            ->orderBy('mutasi_stock.tgl', 'ASC')
-            ->get();
+        $builder = $this->db->table('mutasi_stock');
+        $builder->select('
+            mutasi_stock.*,
+            barang.nama as nama_brg,
+            barang.harga as harga,
+            barang.satuan
+        ');
+        $builder->join('barang', 'barang.kode = mutasi_stock.kode_brg');
+        
+        if ($tglAwal && $tglAkhir) {
+            $builder->where('DATE(mutasi_stock.tgl) >=', $tglAwal);
+            $builder->where('DATE(mutasi_stock.tgl) <=', $tglAkhir);
+        }
+        
+        $builder->orderBy('mutasi_stock.tgl', 'ASC');
+        
+        return $builder;
     }
 
     public function getHisBrgMasuk($tglAwal = null, $tglAkhir = null)

@@ -19,13 +19,24 @@ class Master_barang extends BaseController
     }
     public function index()
     {
+        // Build query
+        $query = $this->barangModel->getBarang();
+        
+        // Setup pagination
+        $result = $this->setupPagination($query);
+        
         $data = [
-            'data' => $this->barangModel->getBarang()->getResult(),
+            'data' => $result['data'],
             'level_akses' => $this->session->nama_level,
             'dtmenu' => $this->tampil_menu($this->session->level),
             'dtsubmenu' => $this->tampil_submenu($this->session->level),
             'nama_menu' => 'Master',
-            'nama_submenu' => 'Master Barang'
+            'nama_submenu' => 'Master Barang',
+            // Add pagination data
+            'currentPage' => $result['pager']['currentPage'],
+            'perPage' => $result['pager']['perPage'],
+            'total' => $result['pager']['total'],
+            'totalPages' => $result['pager']['totalPages']
         ];
         return view('admin/masbarang', $data);
     }

@@ -15,13 +15,25 @@ class Master_satuan extends BaseController
     }
     public function index()
     {
+        // Build query using Query Builder instead of findAll()
+        $query = $this->satuanModel->select('*')
+                                   ->orderBy('nama', 'ASC');
+        
+        // Setup pagination
+        $result = $this->setupPagination($query);
+        
         $data = [
-            'data' => $this->satuanModel->findAll(),
+            'data' => $result['data'],
             'level_akses' => $this->session->nama_level,
             'dtmenu' => $this->tampil_menu($this->session->level),
             'dtsubmenu' => $this->tampil_submenu($this->session->level),
             'nama_menu' => 'Master',
-            'nama_submenu' => 'Master satuan'
+            'nama_submenu' => 'Master satuan',
+            // Add pagination data
+            'currentPage' => $result['pager']['currentPage'],
+            'perPage' => $result['pager']['perPage'],
+            'total' => $result['pager']['total'],
+            'totalPages' => $result['pager']['totalPages']
         ];
         return view('admin/massatuan', $data);
     }
