@@ -909,50 +909,60 @@
     })
     // simpan entri brg masuk
     $(".btn-simpan-brgmasuk").click(function() {
-        let noFaktur = $("#no_input-faktur").val()
+        let noFaktur = $("#no_input-faktur").val();
+        
         if (noFaktur.length == 0) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Peringatan',
                 text: 'No Faktur belum diisi',
-            })
-        } else {
-            Swal.fire({
-                text: "Benar akan menyimpan data ini ?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, Simpan'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: "/admin/barangmasuk/simpan",
-                        data: {
-                            noFaktur: noFaktur,
-                        },
-                        method: "post",
-                        dataType: "json",
-                        success: function(responds) {
-                            if (responds.status) {
-                                Swal.fire({
-                                    title: 'Akan menambah faktur lagi ?',
-                                    showDenyButton: true,
-                                    confirmButtonText: 'Ya',
-                                    denyButtonText: `Tidak`,
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        data_temp()
-                                    } else if (result.isDenied) {
-                                        window.location.href = "/admin/barangmasuk"
-                                    }
-                                })
-                            }
-                        }
-                    });
-                }
-            })
+            });
+            return;
         }
+
+        Swal.fire({
+            text: "Benar akan menyimpan data ini?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Simpan'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "/admin/barangmasuk/simpan",
+                    type: "POST", // Changed from method to type
+                    dataType: "json",
+                    data: {
+                        noFaktur: noFaktur
+                    },
+                    success: function(responds) {
+                        if (responds.status) {
+                            Swal.fire({
+                                title: 'Akan menambah faktur lagi?',
+                                showDenyButton: true,
+                                confirmButtonText: 'Ya',
+                                denyButtonText: `Tidak`,
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    data_temp();
+                                } else if (result.isDenied) {
+                                    window.location.href = "/admin/barangmasuk";
+                                }
+                            });
+                        }
+                    },
+                    error: function(xhr, status, err) {
+                        console.error("Server-side error:", xhr.responseText);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error di server',
+                            text: xhr.responseText
+                        });
+                    }
+                });
+            }
+        });
     })
     // form tambah brg masuk
     $(".btn-fentri-brgmasuk").click(function() {
@@ -1668,4 +1678,56 @@
         })
     })
     /****************** end script retur brg masuk & keluar ****************/
+
+    // Add to existing JavaScript section in barang_masuk.php
+
+    // Add price check when selecting product
+    $('#kode_brg_input').on('change', function() {
+        let kodeBarang = $(this).val();
+        $.ajax({
+            url: '<?= base_url('admin/barangmasuk/detilbarang') ?>',
+            type: 'POST',
+            data: {
+                kodeBarang: kodeBarang
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.data) {
+                    window.currentHarga = response.data.harga;
+                    $('#hpp').val(response.data.harga);
+                }
+            }
+        });
+    });
+
+    // Add price check before adding item
+    $('#add-itemTemp').on('click', function() {
+        let kodeBarang = $('#kode_brg_input').val();
+        let hargaBaru = parseFloat($('#hpp').val());
+        let hargaLama = parseFloat(window.currentHarga);
+
+        if (hargaBaru !== hargaLama) {
+            if (confirm('Harga yang dimasukkan berbeda dengan harga di database. Update harga barang?')) {
+                $.ajax({
+                    url: '<?= base_url('admin/barangmasuk/updateHarga') ?>',
+                    type: 'POST',
+                    data: {
+                        kode_brg: kodeBarang,
+                        harga: hargaBaru
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.status) {
+                            window.currentHarga = hargaBaru;
+                            alert(response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                    }
+                });
+            }
+        }
+        // Continue with existing add item code
+        // ...existing code...
+    });
 </script>

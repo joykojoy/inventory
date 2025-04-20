@@ -18,10 +18,13 @@ $this->section('content');
             </button>
             <div class="row mt-3">
                 <div class="col-md-4">
-                    <label for="nomer_faktur" class="form-label">Nomer faktur</label>
+                    <label for="nomer_faktur" class="form-label">Nomor Faktur</label>
                     <div class="input-group mb-3">
-                        <input type="text" nama="nomer_faktur" class="form-control" id="no_input-faktur">
-                        <button class="btn btn-outline-success" type="button" id="button-addon2"><i class="bi bi-app"></i></button>
+                        <input type="text" class="form-control" id="no_input-faktur" 
+                               value="<?= $no_faktur ?>" readonly>
+                        <button class="btn btn-outline-secondary" type="button" disabled>
+                            <i class="bi bi-app"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="col-md-4">

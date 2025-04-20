@@ -7,17 +7,16 @@ use CodeIgniter\Model;
 class BarangModel extends Model
 {
     protected $table            = 'barang';
-    protected $primaryKey       = 'id';
+    protected $primaryKey       = 'kode';
     protected $useAutoIncrement = true;
     protected $returnType       = 'object';
     protected $allowedFields    = [
-        'induk',
         'kode',
         'nama',
         'satuan',
-        'status',
-        'min',
-        'harga' // Add this field
+        'harga',
+        'group',
+        'status'
     ];
     protected $useTimestamps    = false;
 
@@ -46,5 +45,10 @@ class BarangModel extends Model
             return $builder->join('satuan', 'satuan.id = barang.satuan')
                 ->join('group', 'group.kode = barang.induk')->get();
         }
+    }
+
+    public function updateHarga($kode, $harga)
+    {
+        return $this->update($kode, ['harga' => $harga]);
     }
 }

@@ -113,6 +113,7 @@ $routes->get('/admin/barangmasuk/tambah', 'Admin\Barangmasuk::tambah');
 $routes->post('/admin/barangmasuk/datatemp', 'Admin\Barangmasuk::datatemp');
 $routes->post('/admin/barangmasuk/detilbarang', 'Admin\Barangmasuk::detilbarang');
 $routes->post('/admin/barangmasuk/simpan_detilbarang', 'Admin\Barangmasuk::simpan_detilbarang');
+$routes->post('/admin/barangmasuk/load_temp', 'Admin\Barangmasuk::load_temp');
 $routes->post('/admin/barangmasuk/delete_detilbarang', 'Admin\Barangmasuk::delete_detilbarang');
 $routes->get('/admin/barangmasuk/cari_item', 'Admin\Barangmasuk::cari_item');
 $routes->post('/admin/barangmasuk/simpan', 'Admin\Barangmasuk::simpan');
@@ -123,6 +124,7 @@ $routes->post('/admin/barangmasuk/delete_fedit_faktur', 'Admin\Barangmasuk::dele
 $routes->post('/admin/barangmasuk/simpan_fedit', 'Admin\Barangmasuk::simpan_fedit');
 $routes->get('/admin/barangmasuk/cari_item_fedit', 'Admin\Barangmasuk::cari_item_fedit');
 $routes->post('/admin/barangmasuk/return', 'Admin\Barangmasuk::return');
+$routes->post('/admin/barangmasuk/updateHarga', 'Admin\Barangmasuk::updateHarga');
 
 // admin history stock
 $routes->get('/admin/historystock', 'Admin\Historystock::index');
