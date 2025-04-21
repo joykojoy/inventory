@@ -98,3 +98,43 @@ $this->section('content');
     </div>
 </section>
 <?php $this->endSection() ?>
+
+<script>
+    // Add this after your existing scripts
+    $('#hpp').on('change', function() {
+        let kodeBarang = $('#kode_brg_input').val();
+        let hargaBaru = $(this).val();
+        
+        console.log('Updating price for:', kodeBarang, 'to:', hargaBaru);
+
+        if (!kodeBarang || !hargaBaru) {
+            console.error('Kode barang or harga is empty', {kodeBarang, hargaBaru});
+            return;
+        }
+
+        $.ajax({
+            url: '<?= base_url('admin/barangmasuk/updateHarga') ?>',
+            type: 'POST',
+            data: {
+                kodeBarangInput: kodeBarang, // Match the field name with controller
+                hpp: hargaBaru
+            },
+            dataType: 'json',
+            success: function(response) {
+                console.log('Update response:', response);
+                if (response.status) {
+                    // Success handling
+                    console.log('Price updated successfully');
+                } else {
+                    // Error handling
+                    console.error('Update failed:', response.message);
+                    alert(response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', error);
+                console.error('Response:', xhr.responseText);
+            }
+        });
+    });
+</script>

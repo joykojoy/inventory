@@ -91,3 +91,105 @@ $this->section('content');
     </div>
 </section>
 <?php $this->endSection() ?>
+
+<script>
+    // Add to your barang_keluar.php view or related JS file
+
+    $("#add-itemTemp").click(function() {
+        let jumlahBarang = parseInt($("#jumlah_brg_input").val());
+        let stockTersedia = parseInt($("#stock_tersedia").val()); // Add this hidden field in your form
+
+        if (jumlahBarang > stockTersedia) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Stock Tidak Mencukupi',
+                text: `Stock tersedia: ${stockTersedia}`
+            });
+            return false;
+        }
+
+        // ... rest of your existing add-itemTemp code ...
+    });
+
+    // Update stock info when selecting product
+    $('#kode_brg_input').on('change', function() {
+        let kodeBarang = $(this).val();
+        $.ajax({
+            url: '<?= base_url('admin/barangkeluar/detilbarang') ?>',
+            type: 'POST',
+            data: { kodeBarang: kodeBarang },
+            dataType: 'json',
+            success: function(response) {
+                if (response.data) {
+                    $('#stock_tersedia').val(response.data.stock);
+                }
+            }
+        });
+    });
+
+    // Add hidden field for stock
+    $('<input>').attr({
+        type: 'hidden',
+        id: 'stock_tersedia',
+        name: 'stock_tersedia'
+    }).appendTo('.card-body');
+
+    // Stock validation when adding item
+    $("#add-itemTempKeluar").click(function() {
+        let noDO = $("#no_input-do").val();
+        let customer = $("#customer").val();
+        let kodeBarang = $("#kode_brg_keluar").val();
+        let jumlahBarang = parseInt($("#jumlah_brg_keluar").val());
+        let stockTersedia = parseInt($("#stock_tersedia").val());
+        let hrg = $("#hrg").val();
+
+        // Validate stock first
+        if (jumlahBarang > stockTersedia) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: `Stock tidak mencukupi! Stock tersedia: ${stockTersedia}`,
+                showConfirmButton: true,
+                timer: 2000,
+                timerProgressBar: true
+            }).then((result) => {
+                $("#jumlah_brg_keluar").val('');
+                $("#jumlah_brg_keluar").focus();
+            });
+            return false;
+        }
+
+        // Continue with existing validation and save logic
+        if (noDO.length == 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'No DO belum diisi',
+                timer: 2000,
+                timerProgressBar: true
+            });
+            return false;
+        }
+
+        // ... rest of your existing validation and save logic ...
+    });
+
+    // Update stock info when selecting product
+    $("#kode_brg_keluar").on('change', function() {
+        let kodeBarang = $(this).val();
+        
+        $.ajax({
+            url: '<?= base_url('admin/barangkeluar/detilbarang') ?>',
+            type: 'POST',
+            data: { kodeBarang: kodeBarang },
+            dataType: 'json',
+            success: function(response) {
+                if (response.data) {
+                    $('#stock_tersedia').val(response.data.stock);
+                    $('#nama_brg_keluar').val(response.data.nama_barang);
+                    $('#hrg').val(response.data.harga);
+                }
+            }
+        });
+    });
+</script>

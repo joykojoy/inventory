@@ -41,9 +41,9 @@ class Mutasi_stockModel extends Model
             $builder->where('DATE(mutasi_stock.tgl) <=', $tglAkhir);
         }
         
-        $builder->orderBy('mutasi_stock.tgl', 'ASC');
-        
-        return $builder;
+        return $builder->orderBy('mutasi_stock.tgl', 'ASC')
+                      ->get()
+                      ->getResult();
     }
 
     public function getHisBrgMasuk($tglAwal = null, $tglAkhir = null)
@@ -65,13 +65,14 @@ class Mutasi_stockModel extends Model
             ->where('barang.status', 1)
             ->where('mutasi_stock.qtt_in >', 0);
 
-        // Only add date filters if both dates are provided
         if (!empty($tglAwal) && !empty($tglAkhir)) {
             $builder->where('DATE(mutasi_stock.tgl) >=', $tglAwal)
                     ->where('DATE(mutasi_stock.tgl) <=', $tglAkhir);
         }
 
-        return $builder->orderBy('mutasi_stock.tgl', 'ASC')->get();
+        return $builder->orderBy('mutasi_stock.tgl', 'ASC')
+                      ->get()
+                      ->getResult();
     }
 
     public function getHisBrgKeluar($tglAwal, $tglAkhir)
@@ -95,6 +96,7 @@ class Mutasi_stockModel extends Model
             ->where('barang.status', 1)
             ->where('mutasi_stock.qtt_out >', 0)
             ->orderBy('mutasi_stock.tgl', 'ASC')
-            ->get();
+            ->get()
+            ->getResult();
     }
 }

@@ -9,14 +9,14 @@
                         <i data-feather="x"></i>
                     </button>
                 </div>
-                <form id="form-add-barang" action="/admin/master_barang/simpan">
+                <form id="form-add-barang" method="POST" action="/admin/master_barang/simpan">
+                    <?= csrf_field() ?>
                     <div class="modal-body">
-                        <?= csrf_field(); ?>
                         <div class="form-group row">
                             <label for="kode" class="col-sm-3 col-form-label">Kode</label>
                             <div class="col-sm-9">
                                 <input type="text" class="form-control" name="kode">
-                                <div class="invalid-feedback"></div>
+                                <div class="invalid-feedback" id="error-kode"></div>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -66,13 +66,9 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal">
-                            <i class="bx bx-x d-block d-sm-none"></i>
-                            <span class="d-none d-sm-block">Close</span>
-                        </button>
-                        <button type="submit" class="btn btn-primary ml-1">
-                            <i class="bx bx-check d-block d-sm-none"></i>
-                            <span class="d-none d-sm-block">Submit</span>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Simpan
                         </button>
                     </div>
                 </form>

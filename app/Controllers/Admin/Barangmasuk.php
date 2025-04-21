@@ -64,11 +64,11 @@ class Barangmasuk extends BaseController
             'data' => $this->temp_barangmasukModel->findAll(),
             'supplier' => $this->supplierModel->findAll(),
             'level_akses' => $this->session->nama_level,
-            'dtmenu' => $this->tampil_menu($this->session->level),
+            'dtmenu' => $this->tampil_menu($this->session->level),  // Fixed: added $this
             'dtsubmenu' => $this->tampil_submenu($this->session->level),
             'nama_menu' => 'Kelola Stock',
             'nama_submenu' => 'Penerimaan Barang',
-            'no_faktur' => $this->generateNoFaktur() // Add this line
+            'no_faktur' => $this->generateNoFaktur()
         ];
         return view('admin/barang_masuk', $data);
     }
@@ -98,15 +98,23 @@ class Barangmasuk extends BaseController
     public function simpan_detilbarang()
     {
         if (!$this->request->isAJAX()) {
-            throw \CodeIgniter\Exceptions\PageNotfoundException::forPageNotFound('Maaf Halaman Tidak Ditemukan');
+            throw \CodeIgniter\Exceptions\PageNotfoundException::forPageNotFound();
         }
-        // simpan ke tabel temp brg masuk
+
         $noFaktur = $this->request->getPost('noFaktur');
         $supplier = $this->request->getPost('supplier');
         $kodeBarang = $this->request->getPost('kodeBarangInput');
         $jumlahBarang = $this->request->getPost('jumlahBarangInput');
         $hpp = $this->request->getPost('hpp');
         $subTotal = intval($hpp) * intval($jumlahBarang);
+
+        // Check and update barang price if different
+        $barang = $this->barangModel->find($kodeBarang);
+        if ($barang && (float)$barang->harga !== (float)$hpp) {
+            $this->barangModel->update($kodeBarang, ['harga' => $hpp]);
+        }
+
+        // Save to temp table
         $berhasil = $this->temp_barangmasukModel->save([
             'no_faktur' => $noFaktur,
             'tgl_faktur' => date("Y-m-d"),
@@ -116,56 +124,20 @@ class Barangmasuk extends BaseController
             'hpp' => $hpp,
             'subtotal' => $subTotal,
         ]);
+
         if ($berhasil) {
             $output = [
                 'status' => TRUE,
                 'psn' => 'Simpan data berhasil'
             ];
-            echo json_encode($output);
         } else {
             $output = [
-                'status' => TRUE,
+                'status' => FALSE,
                 'psn' => 'Simpan data gagal'
             ];
-            echo json_encode($output);
         }
-        // validasi nomer faktur
-        // $data = [
-        //     'no_faktur' => $noFaktur
-        // ];
-        // $validate = $this->validation->run($data, 'barangMasukRule');
-        // if (!$validate) {
-        //     $errors = $this->validation->getErrors();
-        //     $output = [
-        //         'status' => FALSE,
-        //         'errors' => $errors
-        //     ];
-        //     echo json_encode($output);
-        // } else {
-        //     $subTotal = intval($hpp) * intval($jumlahBarang);
-        //     $berhasil = $this->temp_barangmasukModel->save([
-        //         'no_faktur' => $noFaktur,
-        //         'tgl_faktur' => date("Y-m-d"),
-        //         'supplier' => $supplier,
-        //         'kode_brg' => $kodeBarang,
-        //         'qtt' => $jumlahBarang,
-        //         'hpp' => $hpp,
-        //         'subtotal' => $subTotal,
-        //     ]);
-        //     if ($berhasil) {
-        //         $output = [
-        //             'status' => TRUE,
-        //             'psn' => 'Simpan data berhasil'
-        //         ];
-        //         echo json_encode($output);
-        //     } else {
-        //         $output = [
-        //             'status' => TRUE,
-        //             'psn' => 'Simpan data gagal'
-        //         ];
-        //         echo json_encode($output);
-        //     }
-        // }
+
+        echo json_encode($output);
     }
     public function delete_detilbarang()
     {
@@ -479,5 +451,57 @@ class Barangmasuk extends BaseController
         }
         
         return $noFaktur;
+    }
+
+    // Add this method to your Barangmasuk controller
+    public function updateHarga()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => 'Invalid request'
+            ]);
+        }
+
+        try {
+            // Get values using the correct field names from POST data
+            $kodeBarang = trim($this->request->getPost('kode_brg'));
+            $hargaBaru = (float)$this->request->getPost('harga');
+
+            // Debug log
+            log_message('debug', 'Update Harga - Kode: ' . $kodeBarang . ', Harga: ' . $hargaBaru);
+
+            if (empty($kodeBarang)) {
+                throw new \Exception('Kode barang tidak boleh kosong');
+            }
+
+            // Get specific barang by kode
+            $barang = $this->barangModel->where('kode', $kodeBarang)->first();
+            
+            if (!$barang) {
+                throw new \Exception("Barang dengan kode {$kodeBarang} tidak ditemukan");
+            }
+
+            // Update the price
+            $updated = $this->barangModel->where('kode', $kodeBarang)
+                                        ->set(['harga' => $hargaBaru])
+                                        ->update();
+
+            if ($updated) {
+                return $this->response->setJSON([
+                    'status' => true,
+                    'message' => "Harga barang {$kodeBarang} berhasil diupdate"
+                ]);
+            }
+
+            throw new \Exception('Gagal update harga');
+
+        } catch (\Exception $e) {
+            log_message('error', 'Update harga error: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 }

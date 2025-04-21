@@ -82,6 +82,10 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], function($rout
     $routes->post('master_barang/aktifkan', 'Master_barang::aktifkan');
     $routes->post('master_barang/nonaktifkan', 'Master_barang::nonaktifkan');
 });
+$routes->group('admin', ['filter' => 'auth'], function($routes) {
+    $routes->post('master_barang/fhapus', 'Admin\Master_barang::fhapus');
+    $routes->post('master_barang/delete', 'Admin\Master_barang::delete');
+});
 $routes->get('/admin/master_barang/tambah', 'Admin\Master_barang::tambah');
 $routes->get('/admin/master_barang/nonaktifkan', 'Admin\Master_barang::nonaktifkan');
 $routes->get('/admin/master_barang/aktifkan', 'Admin\Master_barang::aktifkan');
@@ -124,6 +128,7 @@ $routes->post('/admin/barangmasuk/delete_fedit_faktur', 'Admin\Barangmasuk::dele
 $routes->post('/admin/barangmasuk/simpan_fedit', 'Admin\Barangmasuk::simpan_fedit');
 $routes->get('/admin/barangmasuk/cari_item_fedit', 'Admin\Barangmasuk::cari_item_fedit');
 $routes->post('/admin/barangmasuk/return', 'Admin\Barangmasuk::return');
+$routes->match(['get', 'post'], '/admin/barangmasuk/updateHarga', 'Admin\Barangmasuk::updateHarga');
 $routes->post('/admin/barangmasuk/updateHarga', 'Admin\Barangmasuk::updateHarga');
 
 // admin history stock

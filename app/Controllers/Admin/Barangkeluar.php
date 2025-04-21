@@ -94,15 +94,28 @@ class Barangkeluar extends BaseController
     public function simpan_detilbarang()
     {
         if (!$this->request->isAJAX()) {
-            throw \CodeIgniter\Exceptions\PageNotfoundException::forPageNotFound('Maaf Halaman Tidak Ditemukan');
+            throw \CodeIgniter\Exceptions\PageNotfoundException::forPageNotFound();
         }
-        // simpan ke tabel temp brg keluar
+
         $noDO = $this->request->getPost('noDO');
         $customer = $this->request->getPost('customer');
         $kodeBarang = $this->request->getPost('kodeBarangKeluar');
-        $jumlahBarang = $this->request->getPost('jumlahBarangKeluar');
+        $jumlahBarang = (int)$this->request->getPost('jumlahBarangKeluar');
         $hrg = $this->request->getPost('hrg');
-        $subTotal = intval($hrg) * intval($jumlahBarang);
+
+        // Check stock availability
+        $currentStock = $this->stockModel->where('kode_brg', $kodeBarang)->first();
+        
+        if (!$currentStock || $currentStock->qtt < $jumlahBarang) {
+            $available = $currentStock ? $currentStock->qtt : 0;
+            return $this->response->setJSON([
+                'status' => false,
+                'psn' => "Stock tidak mencukupi. Stock tersedia: {$available}"
+            ]);
+        }
+
+        $subTotal = intval($hrg) * $jumlahBarang;
+        
         $berhasil = $this->temp_barangkeluarModel->save([
             'no_do' => $noDO,
             'tgl_do' => date("Y-m-d"),
@@ -112,19 +125,18 @@ class Barangkeluar extends BaseController
             'hrg' => $hrg,
             'subtotal' => $subTotal,
         ]);
+
         if ($berhasil) {
-            $output = [
-                'status' => TRUE,
+            return $this->response->setJSON([
+                'status' => true,
                 'psn' => 'Item barang berhasil ditambahkan'
-            ];
-            echo json_encode($output);
-        } else {
-            $output = [
-                'status' => TRUE,
-                'psn' => 'Item barang gagal ditambahkan'
-            ];
-            echo json_encode($output);
+            ]);
         }
+
+        return $this->response->setJSON([
+            'status' => false,
+            'psn' => 'Item barang gagal ditambahkan'
+        ]);
     }
     public function delete_detilbarang()
     {

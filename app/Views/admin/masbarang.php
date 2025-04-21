@@ -58,6 +58,7 @@ $this->section('content');
     </div>
 </section>
 <script src="/assets/vendors/simple-datatables/simple-datatables.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="/assets/js/master_barang.js"></script>
 <script>
     // Simple Datatable

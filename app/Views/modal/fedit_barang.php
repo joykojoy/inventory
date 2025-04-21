@@ -9,10 +9,10 @@
                         <i data-feather="x"></i>
                     </button>
                 </div>
-                <form id="form-edit-barang" action="/admin/master_barang/update">
+                <form id="form-edit-barang" method="POST" action="/admin/master_barang/update">
+                    <?= csrf_field(); ?>
+                    <input type="hidden" class="form-control" name="id" value="<?= $data->id ?>">
                     <div class="modal-body">
-                        <?= csrf_field(); ?>
-                        <input type="hidden" class="form-control" name="id" value="<?= $data->id ?>">
                         <div class="form-group row">
                             <label for="kode" class="col-sm-3 col-form-label">Kode</label>
                             <div class="col-sm-9">

@@ -7,22 +7,27 @@ use CodeIgniter\Model;
 class BarangModel extends Model
 {
     protected $table            = 'barang';
-    protected $primaryKey       = 'kode';
+    protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType       = 'object';
+    protected $returnType       = 'array';
     protected $allowedFields    = [
+        'id',
+        'induk',
         'kode',
         'nama',
         'satuan',
-        'harga',
-        'group',
-        'status'
+        'status',
+        'min',
+        'harga'
     ];
     protected $useTimestamps    = false;
 
-    // Add type casting to ensure proper data type
+    // Add proper type casting
     protected $casts = [
-        'min' => 'integer'
+        'min' => 'integer',
+        'status' => 'integer',
+        'satuan' => 'integer',
+        'harga' => 'decimal'
     ];
 
     public function getBarang($kode = false)
@@ -49,6 +54,6 @@ class BarangModel extends Model
 
     public function updateHarga($kode, $harga)
     {
-        return $this->update($kode, ['harga' => $harga]);
+        return $this->update(['kode' => $kode], ['harga' => $harga]);
     }
 }

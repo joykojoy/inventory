@@ -50,39 +50,48 @@ class Historystock extends BaseController
             $tglAkhir = $this->request->getPost('tglAkhir');
             $opsi = $this->request->getPost('opsi');
 
+            // Debug log
+            log_message('debug', "his_brg called with dates: {$tglAwal} to {$tglAkhir}, opsi: {$opsi}");
+
             // Validate dates
             if (empty($tglAwal) || empty($tglAkhir)) {
                 throw new \Exception('Tanggal awal dan akhir harus diisi');
             }
 
             // Get data based on opsi
-            if ($opsi == 'brg_in') {
-                $result = $this->mutasiStockModel->getHisBrgMasuk($tglAwal, $tglAkhir);
-                $view = 'tabel/his_brgmasuk';
-            } else if ($opsi == 'brg_out') {
-                $result = $this->mutasiStockModel->getHisBrgKeluar($tglAwal, $tglAkhir);
-                $view = 'tabel/his_brgkeluar';
-            } else {
-                $result = $this->mutasiStockModel->getHisBrg($tglAwal, $tglAkhir);
-                $view = 'tabel/his_brg';
+            switch($opsi) {
+                case 'brg_in':
+                    $resultData = $this->mutasiStockModel->getHisBrgMasuk($tglAwal, $tglAkhir);
+                    $view = 'tabel/his_brgmasuk';
+                    break;
+                case 'brg_out':
+                    $resultData = $this->mutasiStockModel->getHisBrgKeluar($tglAwal, $tglAkhir);
+                    $view = 'tabel/his_brgkeluar';
+                    break;
+                default:
+                    $resultData = $this->mutasiStockModel->getHisBrg($tglAwal, $tglAkhir);
+                    $view = 'tabel/his_brg';
             }
 
             $data = [
-                'data' => $result->get()->getResult(), // Changed this line
+                'data' => $resultData,
                 'tglAwal' => $tglAwal,
                 'tglAkhir' => $tglAkhir
             ];
 
+            $viewContent = view($view, $data);
+
             return $this->response->setJSON([
                 'status' => true,
-                'data' => view($view, $data)
+                'data' => $viewContent
             ]);
 
         } catch (\Exception $e) {
+            log_message('error', '[History] Error: ' . $e->getMessage());
             return $this->response->setJSON([
                 'status' => false,
                 'message' => $e->getMessage()
-            ]);
+            ])->setStatusCode(500);
         }
     }
     public function his_brgmasuk()
@@ -120,30 +129,44 @@ class Historystock extends BaseController
             ])->setStatusCode(500);
         }
     }
-    public function his_brg_pdf($tglAwal, $tglAkhir, $typeHistory)
+    public function his_brg_pdf($tglAwal, $tglAkhir, $typeHistory) 
     {
-        if ($typeHistory == 'all') {
-            $data = $this->mutasiStockModel->getHisBrg($tglAwal, $tglAkhir)->getResult();
-        } else if ($typeHistory == 'brg_in') {
-            $data = $this->mutasiStockModel->getHisBrgMasuk($tglAwal, $tglAkhir)->getResult();
-        } else if ($typeHistory == 'brg_out') {
-            $data = $this->mutasiStockModel->getHisBrgKeluar($tglAwal, $tglAkhir)->getResult();
-        }
-        $data = [
-            'data' => $data,
-        ];
-        if ($typeHistory == 'all') {
-            return view('admin/his_brg_pdf', $data);
-        } else if ($typeHistory == 'brg_in') {
-            return view('admin/his_brgmasuk_pdf', $data);
-        } else if ($typeHistory == 'brg_out') {
-            return view('admin/his_brgkeluar_pdf', $data);
+        try {
+            // Get data based on history type
+            switch($typeHistory) {
+                case 'all':
+                    $resultData = $this->mutasiStockModel->getHisBrg($tglAwal, $tglAkhir);
+                    $view = 'admin/his_brg_pdf';
+                    break;
+                case 'brg_in':
+                    $resultData = $this->mutasiStockModel->getHisBrgMasuk($tglAwal, $tglAkhir);
+                    $view = 'admin/his_brgmasuk_pdf';
+                    break;
+                case 'brg_out':
+                    $resultData = $this->mutasiStockModel->getHisBrgKeluar($tglAwal, $tglAkhir);
+                    $view = 'admin/his_brgkeluar_pdf';
+                    break;
+                default:
+                    throw new \Exception('Invalid history type');
+            }
+
+            $data = [
+                'data' => $resultData, // Now resultData is already the result object
+                'tglAwal' => $tglAwal,
+                'tglAkhir' => $tglAkhir
+            ];
+
+            return view($view, $data);
+
+        } catch (\Exception $e) {
+            log_message('error', '[PDF Generation] Error: ' . $e->getMessage());
+            return 'Error generating PDF: ' . $e->getMessage();
         }
     }
     public function barangmasuk()
     {
         $data = [
-            'data' => $this->mutasiStockModel->getHisBrgMasuk(null, null)->getResult(), // Tambahkan data barang masuk
+            'data' => $this->mutasiStockModel->getHisBrgMasuk(null, null), // Remove ->getResult() since method already returns results
             'level_akses' => $this->session->nama_level,
             'dtmenu' => $this->tampil_menu($this->session->level),
             'dtsubmenu' => $this->tampil_submenu($this->session->level),

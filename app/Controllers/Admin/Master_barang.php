@@ -69,68 +69,90 @@ class Master_barang extends BaseController
     public function simpan()
     {
         if (!$this->request->isAJAX()) {
-            throw \CodeIgniter\Exceptions\PageNotfoundException::forPageNotFound('Maaf Halaman Tidak Ditemukan');
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
-        $data = $this->request->getVar();
-        $validate = $this->validation->run($data, 'addBarangRule');
-        if (!$validate) {
-            $errors = $this->validation->getErrors();
-            $output = [
-                'status' => FALSE,
-                'errors' => $errors
-            ];
-            echo json_encode($output);
-        } else {
-            $berhasil = $this->barangModel->save([
+
+        try {
+            $data = [
                 'induk' => $this->request->getPost('induk'),
                 'kode' => $this->request->getPost('kode'),
                 'nama' => $this->request->getPost('nama'),
-                'satuan' => $this->request->getPost('satuan'),
+                'satuan' => (int)$this->request->getPost('satuan'),
                 'status' => 1,
-                'min' => (int)$this->request->getPost('min'), // Explicitly cast to integer
-                'harga' => (float)$this->request->getPost('harga') // Add this line
-            ]);
-            if ($berhasil) {
-                $this->session->setFlashdata('pesan', 'Data barang berhasil disimpan');
-                echo json_encode(['status' => TRUE]);
-            } else {
-                $this->session->setFlashdata('pesan', 'Data barang gagal disimpan');
-                echo json_encode(['status' => TRUE]);
+                'min' => (int)($this->request->getPost('min') ?? 0),
+                'harga' => (float)($this->request->getPost('harga') ?? 0)
+            ];
+
+            // Validate data
+            if (!$this->validation->run($data, 'addBarangRule')) {
+                return $this->response->setJSON([
+                    'status' => false,
+                    'errors' => $this->validation->getErrors()
+                ]);
             }
+
+            $saved = $this->barangModel->insert($data);
+
+            if ($saved) {
+                return $this->response->setJSON([
+                    'status' => true,
+                    'message' => 'Data barang berhasil disimpan'
+                ]);
+            } else {
+                throw new \Exception('Gagal menyimpan data barang');
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', '[ERROR] {exception}', ['exception' => $e]);
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
         }
     }
     public function update()
     {
         if (!$this->request->isAJAX()) {
-            throw \CodeIgniter\Exceptions\PageNotfoundException::forPageNotFound('Maaf Halaman Tidak Ditemukan');
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
-        $data = $this->request->getPost();
-        $id = $data['id'];
-        $validate = $this->validation->run($data, 'updateBarangRule');
-        if (!$validate) {
-            $errors = $this->validation->getErrors();
-            $output = [
-                'status' => FALSE,
-                'errors' => $errors
-            ];
-            echo json_encode($output);
-        } else {
-            $dataEdit = [
+
+        try {
+            $id = $this->request->getPost('id');
+            
+            $data = [
                 'induk' => $this->request->getPost('induk'),
                 'kode' => $this->request->getPost('kode'),
                 'nama' => $this->request->getPost('nama'),
-                'satuan' => $this->request->getPost('satuan'),
-                'min' => (int)$this->request->getPost('min'), // Explicitly cast to integer
-                'harga' => (float)$this->request->getPost('harga') // Add this line
+                'satuan' => (int)$this->request->getPost('satuan'),
+                'min' => (int)($this->request->getPost('min') ?? 0),
+                'harga' => (float)($this->request->getPost('harga') ?? 0)
             ];
-            $berhasil = $this->barangModel->update($id, $dataEdit);
-            if ($berhasil) {
-                $this->session->setFlashdata('pesan', 'Data barang berhasil diupdate');
-                echo json_encode(['status' => TRUE]);
-            } else {
-                $this->session->setFlashdata('pesan', 'Data barang gagal diupdate');
-                echo json_encode(['status' => TRUE]);
+
+            // Validate data
+            if (!$this->validation->run($data, 'updateBarangRule')) {
+                return $this->response->setJSON([
+                    'status' => false,
+                    'errors' => $this->validation->getErrors()
+                ]);
             }
+
+            $updated = $this->barangModel->update($id, $data);
+
+            if ($updated) {
+                return $this->response->setJSON([
+                    'status' => true,
+                    'message' => 'Data barang berhasil diupdate'
+                ]);
+            } else {
+                throw new \Exception('Gagal mengupdate data barang');
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', '[ERROR] {exception}', ['exception' => $e]);
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
         }
     }
     public function aktifkan()
@@ -176,28 +198,74 @@ class Master_barang extends BaseController
     public function fhapus()
     {
         if (!$this->request->isAJAX()) {
-            throw \CodeIgniter\Exceptions\PageNotfoundException::forPageNotFound('Maaf Halaman Tidak Ditemukan');
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
-        $id = $this->request->getVar('id');
-        $data = [
-            'data' => $this->barangModel->find($id),
-        ];
-        $hasil = view('modal/fhapus_barang', $data);
-        echo json_encode($hasil);
+
+        try {
+            $id = $this->request->getVar('id');
+            
+            // Get complete barang data with joins
+            $barang = $this->barangModel->select('
+                    barang.*,
+                    satuan.nama as nama_satuan,
+                    group.nama as nama_group
+                ')
+                ->join('satuan', 'satuan.id = barang.satuan')
+                ->join('group', 'group.kode = barang.induk')
+                ->where('barang.id', $id)
+                ->first();
+
+            if (!$barang) {
+                throw new \Exception('Data barang tidak ditemukan');
+            }
+
+            $view = view('modal/fhapus_barang', ['data' => (object)$barang]);
+            
+            return $this->response->setJSON([
+                'status' => true,
+                'content' => $view
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', '[ERROR] {exception}', ['exception' => $e]);
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
+
     public function delete()
     {
         if (!$this->request->isAJAX()) {
-            throw \CodeIgniter\Exceptions\PageNotfoundException::forPageNotFound('Maaf Halaman Tidak Ditemukan');
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
-        $id = $this->request->getPost('id');
-        $berhasil = $this->barangModel->delete($id);
-        if ($berhasil) {
-            $this->session->setFlashdata('pesan', 'Data barang berhasil dihapus');
-            echo json_encode(['status' => TRUE]);
-        } else {
-            $this->session->setFlashdata('pesan', 'Data barang gagal dihapus');
-            echo json_encode(['status' => TRUE]);
+
+        try {
+            $id = $this->request->getPost('id');
+            
+            // Check if data exists
+            $barang = $this->barangModel->find($id);
+            if (!$barang) {
+                throw new \Exception('Data barang tidak ditemukan');
+            }
+
+            // Delete the data
+            if (!$this->barangModel->delete($id)) {
+                throw new \Exception('Gagal menghapus data barang');
+            }
+
+            return $this->response->setJSON([
+                'status' => true,
+                'message' => 'Data barang berhasil dihapus'
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', '[ERROR] {exception}', ['exception' => $e]);
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
         }
     }
 }

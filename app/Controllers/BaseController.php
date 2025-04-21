@@ -108,7 +108,7 @@ abstract class BaseController extends Controller
     {
         // Get current page from URL parameter
         $currentPage = (int)($this->request->getGet('page') ?? 1);
-        $perPage = 3; // Items per page
+        $perPage = 5; // Items per page
         
         // Calculate offset (start from 0 for first page)
         $offset = ($currentPage - 1) * $perPage;

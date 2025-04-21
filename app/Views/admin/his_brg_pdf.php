@@ -4,59 +4,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Kelola Stock Gudang</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&display=swap" rel="stylesheet">
+    <title>History Stock Barang</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        .card {
+            margin: 20px;
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 8px;
+        }
+
+        thead {
+            background-color: #f5f5f5;
+        }
+
+        .print-btn {
+            float: right;
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
         @media print {
 
-            button.btn.btn-sm.btn-danger {
+            .print-btn {
                 display: none;
+            }
+
+            body {
+                margin: 0;
+                padding: 15px;
             }
         }
     </style>
-    <link rel="stylesheet" href="/assets/css/bootstrap.css">
-    <link rel="stylesheet" href="/assets/vendors/bootstrap-icons/bootstrap-icons.css">
-    <link rel="stylesheet" href="/assets/css/app.css">
 </head>
 
 <body>
     <div class="card">
         <div class="card-header">
-            <div class="row">
-                <div class="col"></div>
-                <div class="col text-end">
-                    <button class="btn btn-sm btn-danger justify-content-end" onclick="window.print()">
-                        <i class=" bi bi-printer me-2"></i>Print
-                    </button>
-                </div>
-            </div>
-            <div class="row text-center">
-                <h5 class="card-title">History Stock Barang</h5>
+            <button class="print-btn" onclick="window.print()">
+                Print
+            </button>
+            <div class="text-center">
+                <h3>History Stock Barang</h3>
+                <p>Periode: <?= $tglAwal ?> s/d <?= $tglAkhir ?></p>
             </div>
         </div>
-        <div class="card-body fs-6">
-            <table class="table table-light table-striped mt-3" id="table1">
+        <div class="card-body">
+            <table>
                 <thead>
                     <tr>
-                        <td>No</td>
-                        <td>Tanggal</td>
-                        <td>Nama Barang</td>
-                        <td class="text-end">Quantity In</td>
-                        <td class="text-end">Quantity Out</td>
+                        <th>No</th>
+                        <th>Tanggal</th>
+                        <th>Nama Barang</th>
+                        <th class="text-end">Quantity In</th>
+                        <th class="text-end">Quantity Out</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    $no = 1;
+                    <?php $no = 1;
                     foreach ($data as $d) : ?>
                         <tr>
                             <td><?= $no++ ?></td>
-                            <td><?= $d->tgl ?></td>
+                            <td><?= date('d/m/Y', strtotime($d->tgl)) ?></td>
                             <td><?= $d->nama_brg ?></td>
-                            <td class="text-end"><?= $d->qtt_in ?></td>
-                            <td class="text-end"><?= $d->qtt_out ?></td>
+                            <td class="text-end"><?= number_format($d->qtt_in, 0, ',', '.') ?></td>
+                            <td class="text-end"><?= number_format($d->qtt_out, 0, ',', '.') ?></td>
                         </tr>
                     <?php endforeach ?>
                 </tbody>

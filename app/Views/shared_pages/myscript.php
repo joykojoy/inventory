@@ -831,70 +831,59 @@
     })
     // simpan input temp
     $("#add-itemTemp").click(function() {
-        let noFaktur = $("#no_input-faktur").val()
-        let supplier = $("#supplier").val()
-        let tglreceived = $("#tglreceived").val()
-        let kodeBarangInput = $("#kode_brg_input").val()
-        let namaBarangInput = $("#nama_brg_input").val()
-        let jumlahBarangInput = $("#jumlah_brg_input").val()
-        let hpp = $("#hpp").val()
-        if (noFaktur.length == 0) {
+        let noFaktur = $("#no_input-faktur").val();
+        let supplier = $("#supplier").val();
+        let kodeBarangInput = $("#kode_brg_input").val();
+        let jumlahBarangInput = $("#jumlah_brg_input").val();
+        let hpp = $("#hpp").val();
+
+        // Validation checks...
+        if (!noFaktur || !supplier || !kodeBarangInput || !jumlahBarangInput || !hpp) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Peringatan',
-                text: 'Nomer Faktur belum diisi',
-            })
-        } else if (supplier.length == 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Peringatan',
-                text: 'Supplier belum diisi',
-            })
-        } else if (namaBarangInput.length == 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Peringatan',
-                text: 'Nama barang belum diisi',
-            })
-        } else if (jumlahBarangInput.length == 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Peringatan',
-                text: 'Jumlah barang belum diisi',
-            })
-        } else if (hpp.length == 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Peringatan',
-                text: 'HPP belum diisi',
-            })
-        } else {
-            $.ajax({
-                url: "/admin/barangmasuk/simpan_detilbarang",
-                data: {
-                    noFaktur: noFaktur,
-                    supplier: supplier,
-                    kodeBarangInput: kodeBarangInput,
-                    jumlahBarangInput: jumlahBarangInput,
-                    hpp: hpp
-                },
-                method: "post",
-                dataType: "json",
-                success: function(responds) {
-                    if (responds.status) {
-                        data_temp()
-                        kosongkan()
-                    } else {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Peringatan',
-                            text: responds.errors,
-                        })
-                    }
-                }
+                text: 'Semua field harus diisi'
             });
-            $("#kode_brg_input").focus()
+            return;
         }
+
+        $.ajax({
+            url: "/admin/barangmasuk/simpan_detilbarang",
+            data: {
+                noFaktur: noFaktur,
+                supplier: supplier,
+                kodeBarangInput: kodeBarangInput,
+                jumlahBarangInput: jumlahBarangInput,
+                hpp: hpp
+            },
+            method: "post",
+            dataType: "json",
+            success: function(responds) {
+                if (responds.status) {
+                    data_temp();
+                    kosongkan();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: responds.psn
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: responds.psn
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan pada server'
+                });
+            }
+        });
     })
     // cari item brg
     $(".btn-cari-item").click(function() {
@@ -1729,5 +1718,240 @@
         }
         // Continue with existing add item code
         // ...existing code...
+    });
+
+    $.ajax({
+        url: '/admin/master_barang/simpan',
+        type: 'POST',
+        data: formData,
+        dataType: 'json',
+        success: function(response) {
+            if (response.status) {
+                // Success handling
+                alert(response.message);
+                // Refresh the page or table
+                location.reload();
+            } else {
+                // Error handling
+                if (response.errors) {
+                    // Show validation errors
+                    $.each(response.errors, function(key, value) {
+                        $('#' + key).addClass('is-invalid');
+                        $('#error-' + key).text(value);
+                    });
+                } else {
+                    alert(response.message);
+                }
+            }
+        },
+        error: function(xhr, status, error) {
+            alert('Terjadi kesalahan pada server');
+        }
+    });
+
+    $(document).ready(function() {
+        // Form submission handler for barang masuk
+        $(document).on('submit', '#form-tambah-barang', function(e) {
+            e.preventDefault();
+            
+            // Get form data properly
+            let formData = $(this).serialize();
+    
+            $.ajax({
+                url: '/admin/barangmasuk/simpan_detilbarang',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                beforeSend: function() {
+                    $('.btn-simpan').prop('disabled', true)
+                        .html('<i class="spinner-border spinner-border-sm"></i> Processing...');
+                },
+                success: function(response) {
+                    if (response.status) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: response.psn,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Clear form
+                            $('#form-tambah-barang')[0].reset();
+                            // Refresh temp table
+                            data_temp();
+                        });
+                    } else {
+                        if (response.errors) {
+                            $.each(response.errors, function(key, value) {
+                                $('[name="' + key + '"]').addClass('is-invalid');
+                                $('[name="' + key + '"]').siblings('.invalid-feedback').text(value);
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message || 'Terjadi kesalahan'
+                            });
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Terjadi kesalahan pada server'
+                    });
+                },
+                complete: function() {
+                    $('.btn-simpan').prop('disabled', false)
+                        .html('<i class="bi bi-save"></i> Simpan');
+                }
+            });
+        });
+    
+        // Add item handler
+        $('#add-itemTemp').on('click', function() {
+            let formData = {
+                noFaktur: $('#no_input-faktur').val(),
+                supplier: $('#supplier').val(),
+                kodeBarangInput: $('#kode_brg_input').val(),
+                jumlahBarangInput: $('#jumlah_brg_input').val(),
+                hpp: $('#hpp').val()
+            };
+    
+            // Validate required fields
+            if (!formData.noFaktur) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Nomor Faktur harus diisi'
+                });
+                return;
+            }
+    
+            $.ajax({
+                url: '/admin/barangmasuk/simpan_detilbarang',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status) {
+                        // Clear inputs and refresh table
+                        kosongkan();
+                        data_temp();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: response.psn,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message || 'Terjadi kesalahan'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Terjadi kesalahan pada server'
+                    });
+                }
+            });
+        });
+    
+        // Helper functions
+        function kosongkan() {
+            $('#kode_brg_input').val('');
+            $('#nama_brg_input').val('');
+            $('#jumlah_brg_input').val('');
+            $('#hpp').val('');
+        }
+    
+        function data_temp() {
+            let noFaktur = $('#no_input-faktur').val();
+            $.ajax({
+                url: '/admin/barangmasuk/datatemp',
+                type: 'POST',
+                data: { noFaktur: noFaktur },
+                dataType: 'json',
+                success: function(response) {
+                    $('.divbarangmasuk').html(response);
+                }
+            });
+        }
+    });
+
+    // Add this after existing barangmasuk scripts
+    $('#hpp').on('change', function() {
+        let currentPrice = $(this).data('original-price');
+        let newPrice = $(this).val();
+        
+        if (currentPrice && currentPrice != newPrice) {
+            console.log('Price changed from ' + currentPrice + ' to ' + newPrice);
+        }
+    });
+
+    // Modify the existing add-itemTemp click handler
+    $("#add-itemTemp").click(function() {
+        let noFaktur = $("#no_input-faktur").val();
+        let supplier = $("#supplier").val();
+        let kodeBarangInput = $("#kode_brg_input").val();
+        let jumlahBarangInput = $("#jumlah_brg_input").val();
+        let hpp = $("#hpp").val();
+
+        // Validation checks...
+        if (!noFaktur || !supplier || !kodeBarangInput || !jumlahBarangInput || !hpp) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Semua field harus diisi'
+            });
+            return;
+        }
+
+        $.ajax({
+            url: "/admin/barangmasuk/simpan_detilbarang",
+            data: {
+                noFaktur: noFaktur,
+                supplier: supplier,
+                kodeBarangInput: kodeBarangInput,
+                jumlahBarangInput: jumlahBarangInput,
+                hpp: hpp
+            },
+            method: "post",
+            dataType: "json",
+            success: function(responds) {
+                if (responds.status) {
+                    data_temp();
+                    kosongkan();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: responds.psn
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: responds.psn
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan pada server'
+                });
+            }
+        });
     });
 </script>

@@ -131,54 +131,48 @@ class Validation extends BaseConfig
     ];
     public $addBarangRule = [
         'kode' => [
-            'rules' => 'required|min_length[2]|is_unique[barang.kode]',
+            'rules' => 'required|is_unique[barang.kode]',
             'errors' => [
-                'required' => 'harus disi',
-                'min_length' => 'minimal harus 2 karakter',
-                'is_unique' => 'kode barang sudah terdaftar',
+                'required' => 'Kode barang harus diisi',
+                'is_unique' => 'Kode barang sudah ada'
             ]
         ],
         'nama' => [
-            'rules' => 'required|min_length[3]',
-            'errors' => [
-                'required' => 'harus disi',
-                'min_length' => 'minimal harus 3 karakter',
-            ]
-        ],
-        'satuan' => [
             'rules' => 'required',
             'errors' => [
-                'required' => 'harus disi'
+                'required' => 'Nama barang harus diisi'
             ]
         ],
         'induk' => [
             'rules' => 'required',
             'errors' => [
-                'required' => 'harus disi'
+                'required' => 'Group harus dipilih'
             ]
         ],
-        'harga' => [
-            'rules' => 'required|decimal|greater_than_equal_to[0]',
+        'satuan' => [
+            'rules' => 'required',
             'errors' => [
-                'required' => 'Harga harus diisi',
-                'decimal' => 'Harga harus berupa angka',
-                'greater_than_equal_to' => 'Harga tidak boleh negatif'
+                'required' => 'Satuan harus dipilih'
             ]
         ]
     ];
     public $updateBarangRule = [
-        'id' => 'required',
-        'induk' => 'required',
-        'kode' => 'required',
-        'nama' => 'required',
-        'satuan' => 'required',
-        'min' => 'permit_empty|numeric|greater_than_equal_to[0]',
-        'harga' => [
-            'rules' => 'required|decimal|greater_than_equal_to[0]',
+        'nama' => [
+            'rules' => 'required',
             'errors' => [
-                'required' => 'Harga harus diisi',
-                'decimal' => 'Harga harus berupa angka',
-                'greater_than_equal_to' => 'Harga tidak boleh negatif'
+                'required' => 'Nama barang harus diisi'
+            ]
+        ],
+        'induk' => [
+            'rules' => 'required',
+            'errors' => [
+                'required' => 'Group harus dipilih'
+            ]
+        ],
+        'satuan' => [
+            'rules' => 'required',
+            'errors' => [
+                'required' => 'Satuan harus dipilih'
             ]
         ]
     ];

@@ -33,8 +33,10 @@
                     <button type="button" class="btn btn-outline-primary btn-<?= ($d->status == 0) ? 'aktifkan' : 'nonaktifkan' ?>-barang" data-barang="<?= $d->kode ?>" title="<?= ($d->status == 0) ? 'Akifkan' : 'Nonaktifkan' ?>">
                         <?= ($d->status == 0) ? '<i class="bi bi-box-arrow-in-left"></i>' : '<i class="bi bi-stop-circle"></i>' ?>
                     </button>
-                    <button type="button" class="btn btn-outline-danger btn-hapus-barang" data-id="<?= $d->id ?>" title="Hapus">
-                        <i class="bi bi-trash-fill"></i>
+                    <button type="button" 
+                            class="btn btn-sm btn-danger btn-hapus-barang" 
+                            data-id="<?= $d->id ?>">
+                        <i class="bi bi-trash"></i> Hapus
                     </button>
                 </td>
             </tr>
