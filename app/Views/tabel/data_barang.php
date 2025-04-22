@@ -34,9 +34,9 @@
                         <?= ($d->status == 0) ? '<i class="bi bi-box-arrow-in-left"></i>' : '<i class="bi bi-stop-circle"></i>' ?>
                     </button>
                     <button type="button" 
-                            class="btn btn-sm btn-danger btn-hapus-barang" 
+                            class="btn btn-outline-danger btn-hapus-barang" 
                             data-id="<?= $d->id ?>">
-                        <i class="bi bi-trash"></i> Hapus
+                        <i class="bi bi-trash"></i> 
                     </button>
                 </td>
             </tr>

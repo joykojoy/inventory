@@ -52,6 +52,7 @@ class StockModel extends Model
     {
         return $this->builder()
             ->select('
+                stock.*,
                 barang.kode as kode_brg,
                 barang.nama as nama_brg,
                 barang.min as min_stok,
@@ -66,5 +67,29 @@ class StockModel extends Model
             ->where('barang.status', 1)
             ->orderBy('group.kode', 'ASC')
             ->get();
+    }
+
+    public function getReadyStockWithValue()
+    {
+        return $this->builder()
+            ->select('
+                stock.*,
+                barang.kode as kode_brg,
+                barang.nama,
+                barang.min as min_stok,
+                barang.harga,
+                barang.hpp,
+                satuan.nama as nama_satuan,
+                group.nama as nama_group,
+                COALESCE(stock.qtt, 0) as qtt,
+                COALESCE(stock.qtt * barang.hpp, 0) as value_stock
+            ')
+            ->join('barang', 'barang.kode = stock.kode_brg', 'right')
+            ->join('satuan', 'satuan.id = barang.satuan')
+            ->join('group', 'group.kode = barang.induk')
+            ->where('barang.status', 1)
+            ->orderBy('group.kode', 'ASC')
+            ->get()
+            ->getResult();
     }
 }

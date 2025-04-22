@@ -92,19 +92,32 @@
                         <th>Nama Barang</th>
                         <th class="text-end">Quantity In</th>
                         <th class="text-end">Quantity Out</th>
+                        <th class="text-end">Harga</th>
+                        <th class="text-end">Total Harga</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php $no = 1;
-                    foreach ($data as $d) : ?>
+                    <?php 
+                    $no = 1;
+                    $grandTotal = 0;
+                    foreach ($data as $d) : 
+                        $totalHarga = $d->qtt_in * $d->harga;
+                        $grandTotal += $totalHarga;
+                    ?>
                         <tr>
                             <td><?= $no++ ?></td>
                             <td><?= date('d/m/Y', strtotime($d->tgl)) ?></td>
                             <td><?= $d->nama_brg ?></td>
                             <td class="text-end"><?= number_format($d->qtt_in, 0, ',', '.') ?></td>
                             <td class="text-end"><?= number_format($d->qtt_out, 0, ',', '.') ?></td>
+                            <td class="text-end"><?= number_format($d->harga, 0, ',', '.') ?></td>
+                            <td class="text-end"><?= number_format($totalHarga, 0, ',', '.') ?></td>
                         </tr>
                     <?php endforeach ?>
+                    <tr class="fw-bold">
+                        <td colspan="6" class="text-end">Total:</td>
+                        <td class="text-end"><?= number_format($grandTotal, 0, ',', '.') ?></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
