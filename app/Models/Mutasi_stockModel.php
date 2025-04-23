@@ -82,20 +82,25 @@ class Mutasi_stockModel extends Model
                 mutasi_stock.tgl,
                 mutasi_stock.kode_brg,
                 mutasi_stock.qtt_out,
+                detil_brgkeluar.no_do,
+                barangkeluar.customer,
                 barang.nama as nama_brg,
-                barang.harga as harga,
                 satuan.nama as nama_satuan,
-                group.nama as nama_group,
-                (mutasi_stock.qtt_out * barang.harga) as total_price_out
+                group.nama as nama_group
             ')
             ->join('barang', 'barang.kode = mutasi_stock.kode_brg')
             ->join('satuan', 'satuan.id = barang.satuan')
             ->join('group', 'group.kode = barang.induk')
+            ->join('detil_brgkeluar', 'detil_brgkeluar.kode_brg = mutasi_stock.kode_brg 
+                   AND detil_brgkeluar.qtt = mutasi_stock.qtt_out')
+            ->join('barangkeluar', 'barangkeluar.no_do = detil_brgkeluar.no_do')
             ->where('DATE(mutasi_stock.tgl) >=', $tglAwal)
             ->where('DATE(mutasi_stock.tgl) <=', $tglAkhir)
             ->where('barang.status', 1)
             ->where('mutasi_stock.qtt_out >', 0)
+            ->groupBy(['mutasi_stock.tgl', 'detil_brgkeluar.no_do', 'mutasi_stock.kode_brg', 'mutasi_stock.qtt_out'])
             ->orderBy('mutasi_stock.tgl', 'ASC')
+            ->orderBy('detil_brgkeluar.no_do', 'ASC')
             ->get()
             ->getResult();
     }

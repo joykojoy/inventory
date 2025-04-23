@@ -101,7 +101,6 @@ class Barangkeluar extends BaseController
         $customer = $this->request->getPost('customer');
         $kodeBarang = $this->request->getPost('kodeBarangKeluar');
         $jumlahBarang = (int)$this->request->getPost('jumlahBarangKeluar');
-        $hrg = $this->request->getPost('hrg');
 
         // Check stock availability
         $currentStock = $this->stockModel->where('kode_brg', $kodeBarang)->first();
@@ -113,8 +112,6 @@ class Barangkeluar extends BaseController
                 'psn' => "Stock tidak mencukupi. Stock tersedia: {$available}"
             ]);
         }
-
-        $subTotal = intval($hrg) * $jumlahBarang;
         
         $berhasil = $this->temp_barangkeluarModel->save([
             'no_do' => $noDO,
@@ -122,8 +119,6 @@ class Barangkeluar extends BaseController
             'customer' => $customer,
             'kode_brg' => $kodeBarang,
             'qtt' => $jumlahBarang,
-            'hrg' => $hrg,
-            'subtotal' => $subTotal,
         ]);
 
         if ($berhasil) {
@@ -186,19 +181,16 @@ class Barangkeluar extends BaseController
         } else {
             // simpan barang ke detil brg keluar
             $k = 1;
-            $total = 0;
             $kodeBarangKeluar = [];
             $qttKeluar = [];
             foreach ($dataTemp as $d) {
-                $total += $d->subtotal;
+
                 $this->detil_brgkeluarModel->save([
                     'no_do' => $d->no_do,
                     'tgl_do' => $d->tgl_do,
                     'customer' => $d->customer,
                     'kode_brg' => $d->kode_brg,
                     'qtt' => $d->qtt,
-                    'hrg' => $d->hrg,
-                    'subtotal' => $d->subtotal,
                 ]);
                 $kodeBarangKeluar[$k] = $d->kode_brg;
                 $qttKeluar[$k] = $d->qtt;
@@ -222,7 +214,6 @@ class Barangkeluar extends BaseController
                 'no_do' => $noDO,
                 'tgl_do' => $dataTemp[0]->tgl_do,
                 'customer' => $dataTemp[0]->customer,
-                'total' => $total,
             ]);
             // simpan ke tabel mutasi stock dan table stock 
             $k = 1;
@@ -295,8 +286,6 @@ class Barangkeluar extends BaseController
                         'customer' => $d->customer,
                         'kode_brg' => $d->kode_brg,
                         'qtt' => $d->qtt,
-                        'hrg' => $d->hrg,
-                        'subtotal' => $d->subtotal,
                     ]);
                 }
             }
@@ -338,7 +327,6 @@ class Barangkeluar extends BaseController
             }
         }
         // pindahkan data temp ke tabel detil brg keluar
-        $total = 0;
         foreach ($dataTemp as $d) {
             $this->detil_brgkeluarModel->save([
                 'no_do' => $d->no_do,
@@ -346,10 +334,7 @@ class Barangkeluar extends BaseController
                 'customer' => $d->customer,
                 'kode_brg' => $d->kode_brg,
                 'qtt' => $d->qtt,
-                'hrg' => $d->hrg,
-                'subtotal' => $d->subtotal,
             ]);
-            $total += $d->subtotal;
         }
         // hapus data temp 
         $this->temp_barangkeluarModel->emptyTable();
@@ -358,7 +343,6 @@ class Barangkeluar extends BaseController
             'no_do' => $noDO,
             'tgl_do' => $tglDO,
             'customer' => $customer,
-            'total' => $total,
         ];
         $data = $this->barangkeluarModel->getBarangKeluar($noDO)->getResult();
         if (count($data) > 0) {

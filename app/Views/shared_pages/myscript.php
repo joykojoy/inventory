@@ -1351,13 +1351,8 @@
                 title: 'Peringatan',
                 text: 'Jumlah barang belum diisi',
             })
-        } else if (hrg.length == 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Peringatan',
-                text: 'Harga belum diisi',
-            })
-        } else {
+        } 
+        else {
             $.ajax({
                 url: "/admin/barangkeluar/simpan_detilbarang",
                 data: {
@@ -1953,5 +1948,46 @@
                 });
             }
         });
+    });
+
+    // Add this after existing barangkeluar scripts
+    $("#kode_brg_keluar").on('change', function() {
+        let kodeBarang = $(this).val();
+        
+        $.ajax({
+            url: '/admin/barangkeluar/detilbarang',
+            type: 'POST',
+            data: { kodeBarang: kodeBarang },
+            dataType: 'json',
+            success: function(response) {
+                if (response.data) {
+                    // Set name and price automatically
+                    $('#nama_brg_keluar').val(response.data.nama);
+                    $('#hrg').val(response.data.harga);
+                    $('#stock_tersedia').val(response.data.stock);
+                    
+                    console.log('Data loaded:', {
+                        name: response.data.nama,
+                        price: response.data.harga,
+                        stock: response.data.stock
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                // Clear fields on error
+                $('#nama_brg_keluar').val('');
+                $('#hrg').val('');
+                $('#stock_tersedia').val('');
+            }
+        });
+    });
+
+    // Also update the search button handler
+    $(".btn-cari-item-keluar").on('click', function() {
+        let kodeBarang = $("#kode_brg_keluar").val();
+        if (kodeBarang) {
+            $("#kode_brg_keluar").trigger('change');
+        }
     });
 </script>

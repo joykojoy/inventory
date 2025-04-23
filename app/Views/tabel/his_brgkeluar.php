@@ -26,8 +26,6 @@
                     <th>Group</th>
                     <th class="text-end">Jumlah Keluar</th>
                     <th>Satuan</th>
-                    <th class="text-end">Harga</th>
-                    <th class="text-end">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,8 +41,6 @@
                         <td><?= $d->nama_group ?></td>
                         <td class="text-end"><?= number_format($d->qtt_out, 0, ',', '.') ?></td>
                         <td><?= $d->nama_satuan ?></td>
-                        <td class="text-end"><?= number_format($d->harga, 0, ',', '.') ?></td>
-                        <td class="text-end"><?= number_format($d->qtt_out * $d->harga, 0, ',', '.') ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

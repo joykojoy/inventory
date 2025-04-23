@@ -188,24 +188,29 @@ class Historystock extends BaseController
         return view('admin/history_brgkeluar', $data);
     }
     public function ready()
-    {
-        $readyStock = $this->stockModel->getReadyStock()->getResult();
-        
-        // Format the price for each item
-        foreach ($readyStock as $item) {
-            $item->harga = (float)$item->harga;
-        }
-        
-        $data = [
-            'dtstock' => $readyStock,
-            'level_akses' => $this->session->nama_level,
-            'dtmenu' => $this->tampil_menu($this->session->level),
-            'dtsubmenu' => $this->tampil_submenu($this->session->level),
-            'nama_menu' => 'Laporan Stock', 
-            'nama_submenu' => 'Stock Barang'
-        ];
-        return view('admin/readystock', $data);
-    }
+{
+    // Build query
+    $query = $this->stockModel->getReadyStock();
+    
+    // Setup pagination
+    $result = $this->setupPagination($query);
+    
+    $data = [
+        'dtstock' => $result['data'],
+        'level_akses' => $this->session->nama_level,
+        'dtmenu' => $this->tampil_menu($this->session->level),
+        'dtsubmenu' => $this->tampil_submenu($this->session->level),
+        'nama_menu' => 'Laporan Stock', 
+        'nama_submenu' => 'Stock Barang',
+        // Add pagination data
+        'currentPage' => $result['pager']['currentPage'],
+        'perPage' => $result['pager']['perPage'],
+        'total' => $result['pager']['total'],
+        'totalPages' => $result['pager']['totalPages']
+    ];
+    
+    return view('admin/readystock', $data);
+}
     public function listpdf()
     {
         $data = [

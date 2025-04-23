@@ -45,20 +45,36 @@
                         <td>Nama Barang</td>
                         <td class="text-end">Quantity In</td>
                         <td>Satuan</td>
+                        <td class="text-end">Harga</td>
+                        <td class="text-end">Total Harga</td>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
                     $no = 1;
-                    foreach ($data as $d) : ?>
+                    $totalQty = 0;
+                    $grandTotal = 0;
+                    foreach ($data as $d) : 
+                        $totalHarga = $d->qtt_in * $d->harga;
+                        $totalQty += $d->qtt_in;
+                        $grandTotal += $totalHarga;
+                    ?>
                         <tr>
                             <td><?= $no++ ?></td>
                             <td><?= $d->tgl ?></td>
                             <td><?= $d->nama_brg ?></td>
-                            <td class="text-end"><?= $d->qtt_in ?></td>
+                            <td class="text-end"><?= number_format($d->qtt_in, 0, ',', '.') ?></td>
                             <td><?= $d->nama_satuan ?></td>
+                            <td class="text-end">Rp <?= number_format($d->harga, 0, ',', '.') ?></td>
+                            <td class="text-end">Rp <?= number_format($totalHarga, 0, ',', '.') ?></td>
                         </tr>
                     <?php endforeach ?>
+                    <tr class="fw-bold">
+                        <td colspan="3" class="text-end">Total:</td>
+                        <td class="text-end"><?= number_format($totalQty, 0, ',', '.') ?></td>
+                        <td colspan="2" class="text-end">Total Nilai:</td>
+                        <td class="text-end">Rp <?= number_format($grandTotal, 0, ',', '.') ?></td>
+                    </tr>
                 </tbody>
             </table>
         </div>

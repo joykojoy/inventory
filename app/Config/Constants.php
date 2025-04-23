@@ -78,6 +78,11 @@ defined('EXIT_DATABASE')       || define('EXIT_DATABASE', 8);       // database 
 defined('EXIT__AUTO_MIN')      || define('EXIT__AUTO_MIN', 9);      // lowest automatically-assigned error code
 defined('EXIT__AUTO_MAX')      || define('EXIT__AUTO_MAX', 125);    // highest automatically-assigned error code
 
+// User Level Constants
+defined('LEVEL_ADMIN')     || define('LEVEL_ADMIN', 1);
+defined('LEVEL_MANAGER')   || define('LEVEL_MANAGER', 2);
+defined('LEVEL_PEGAWAI')   || define('LEVEL_PEGAWAI', 3);  // Changed from LEVEL_SALES
+
 /**
  * @deprecated Use \CodeIgniter\Events\Events::PRIORITY_LOW instead.
  */

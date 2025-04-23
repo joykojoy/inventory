@@ -9,7 +9,7 @@ function hasAccess($area = 'admin')
         return $level <= 2;
     }
     
-    if ($area === 'sales') {
+    if ($area === 'pegawai') {
         return $level <= 3;
     }
     

@@ -144,26 +144,40 @@ $routes->get('/admin/historystock/incomingpdf', 'Admin\Historystock::incomingpdf
 // admin dashboard
 $routes->get('/admin/dashboard', 'Admin\Dashboard::index');  // changed from Dashboard to dashboard
 
-// admin barang keluar
-$routes->get('/admin/barangkeluar', 'Admin\Barangkeluar::index');
-$routes->get('/admin/barangkeluar/tambah', 'Admin\Barangkeluar::tambah');
-$routes->post('/admin/barangkeluar/datatemp', 'Admin\Barangkeluar::datatemp');
-$routes->post('/admin/barangkeluar/detilbarang', 'Admin\Barangkeluar::detilbarang');
-$routes->post('/admin/barangkeluar/simpan_detilbarang', 'Admin\Barangkeluar::simpan_detilbarang');
-$routes->post('/admin/barangkeluar/delete_detilbarang', 'Admin\Barangkeluar::delete_detilbarang');
-$routes->get('/admin/barangkeluar/cari_item', 'Admin\Barangkeluar::cari_item');
-$routes->post('/admin/barangkeluar/simpan', 'Admin\Barangkeluar::simpan');
-$routes->post('/admin/barangkeluar/detil_do', 'Admin\Barangkeluar::detil_do');
-$routes->get('/admin/barangkeluar/fedit_do/(:any)', 'Admin\Barangkeluar::fedit_do/$1');
-$routes->post('/admin/barangkeluar/dtemp_dofedit', 'Admin\Barangkeluar::dtemp_dofedit');
-$routes->post('/admin/barangkeluar/delete_fedit_do', 'Admin\Barangkeluar::delete_fedit_do');
-$routes->post('/admin/barangkeluar/simpan_fedit', 'Admin\Barangkeluar::simpan_fedit');
-$routes->get('/admin/barangkeluar/cari_item_fedit', 'Admin\Barangkeluar::cari_item_fedit');
-$routes->post('/admin/barangkeluar/return', 'Admin\Barangkeluar::return');
-$routes->post('/admin/barangkeluar/getHistory', 'Admin\Barangkeluar::getHistory');
+// admin barang keluar routes
+$routes->group('admin', ['namespace' => 'App\Controllers\Admin'], function($routes) {
+    // Barang Keluar Routes
+    $routes->get('barangkeluar', 'Barangkeluar::index');
+    $routes->get('barangkeluar/tambah', 'Barangkeluar::tambah');
+    $routes->post('barangkeluar/datatemp', 'Barangkeluar::datatemp');
+    $routes->post('barangkeluar/detilbarang', 'Barangkeluar::detilbarang');
+    $routes->post('barangkeluar/simpan_detilbarang', 'Barangkeluar::simpan_detilbarang');
+    $routes->post('barangkeluar/delete_detilbarang', 'Barangkeluar::delete_detilbarang');
+    $routes->get('barangkeluar/cari_item', 'Barangkeluar::cari_item');
+    $routes->post('barangkeluar/simpan', 'Barangkeluar::simpan');
+    $routes->post('barangkeluar/detil_do', 'Barangkeluar::detil_do');
+    $routes->get('barangkeluar/fedit_do/(:any)', 'Barangkeluar::fedit_do/$1');
+    $routes->post('barangkeluar/dtemp_dofedit', 'Barangkeluar::dtemp_dofedit');
+    $routes->post('barangkeluar/delete_fedit_do', 'Barangkeluar::delete_fedit_do');
+    $routes->post('barangkeluar/simpan_fedit', 'Barangkeluar::simpan_fedit');
+    $routes->get('barangkeluar/cari_item_fedit', 'Barangkeluar::cari_item_fedit');
+    $routes->post('barangkeluar/return', 'Barangkeluar::return');
+    $routes->post('barangkeluar/getHistory', 'Barangkeluar::getHistory');
+    $routes->post('barangkeluar/getBarangNama', 'Barangkeluar::getBarangNama');
+});
 
 // sales
 $routes->get('/sales/pesanan', 'Sales\Pesanan::index');
+$routes->group('pegawai', ['namespace' => 'App\Controllers\Admin'], function($routes) {
+    // Add stock report routes
+    $routes->get('historystock', 'Historystock::index');
+    $routes->get('historystock/barangmasuk', 'Historystock::barangmasuk');
+    $routes->get('historystock/barangkeluar', 'Historystock::barangkeluar');
+    $routes->get('historystock/ready', 'Historystock::ready');
+    $routes->get('historystock/listpdf', 'Historystock::listpdf');
+    $routes->post('historystock/his_brg', 'Historystock::his_brg');
+    $routes->get('historystock/his_brg_pdf/(:segment)/(:segment)/(:segment)', 'Historystock::his_brg_pdf/$1/$2/$3');
+});
 
 /*
  * --------------------------------------------------------------------

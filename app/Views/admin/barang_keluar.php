@@ -55,13 +55,9 @@ $this->section('content');
                             <label class="form-label">Nama Barang</label>
                             <input type="text" class="form-control" id="nama_brg_keluar" readonly>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4">
                             <label class="form-label">Jumlah Barang</label>
                             <input type="number" class="form-control" id="jumlah_brg_keluar">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Harga Satuan</label>
-                            <input type="number" class="form-control" id="hrg">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Aksi</label>
@@ -191,5 +187,103 @@ $this->section('content');
                 }
             }
         });
+    });
+
+    // In barang_keluar.php
+    $("#add-itemTempKeluar").click(function() {
+        let noDO = $("#no_input-do").val();
+        let customer = $("#customer").val();
+        let kodeBarang = $("#kode_brg_keluar").val();
+        let jumlahBarang = parseInt($("#jumlah_brg_keluar").val());
+        let stockTersedia = parseInt($("#stock_tersedia").val());
+
+        // Validate inputs
+        if (!noDO || !customer || !kodeBarang || !jumlahBarang) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Semua field harus diisi'
+            });
+            return false;
+        }
+
+        // Validate stock
+        if (jumlahBarang > stockTersedia) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: `Stock tidak mencukupi! Stock tersedia: ${stockTersedia}`
+            });
+            return false;
+        }
+
+        // Save to temp
+        $.ajax({
+            url: '<?= base_url('admin/barangkeluar/simpan_detilbarang') ?>',
+            type: 'POST',
+            data: {
+                noDO: noDO,
+                customer: customer,
+                kodeBarangKeluar: kodeBarang,
+                jumlahBarangKeluar: jumlahBarang
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.status) {
+                    $("#kode_brg_keluar").val('');
+                    $("#nama_brg_keluar").val('');
+                    $("#jumlah_brg_keluar").val('');
+                    data_temp_keluar();
+                }
+            }
+        });
+    });
+
+    $("#kode_brg_keluar").on('change', function() {
+        let kode_brg = $(this).val();
+        
+        $.ajax({
+            url: '<?= base_url('admin/barangkeluar/getBarangNama') ?>',
+            type: 'POST',
+            data: { 
+                kode_brg: kode_brg 
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.status) {
+                    $('#nama_brg_keluar').val(response.nama_brg);
+                }
+            }
+        });
+    });
+
+    // Remove any existing kode_brg_keluar change handler
+    // Add this new one:
+    $("#kode_brg_keluar").on('change keyup', function() {
+        let kode_brg = $(this).val();
+        
+        if (kode_brg) {
+            $.ajax({
+                url: '<?= base_url('admin/barangkeluar/getBarangNama') ?>',
+                type: 'POST',
+                data: { 
+                    kode_brg: kode_brg 
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status && response.nama_brg) {
+                        $('#nama_brg_keluar').val(response.nama_brg);
+                    } else {
+                        $('#nama_brg_keluar').val('');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    $('#nama_brg_keluar').val('');
+                }
+            });
+        } else {
+            $('#nama_brg_keluar').val('');
+        }
     });
 </script>

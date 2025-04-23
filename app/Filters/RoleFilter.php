@@ -19,15 +19,25 @@ class RoleFilter implements FilterInterface
             if ($uri[1] === 'dashboard') {
                 return;
             }
+            
+            // Allow historystock access for all levels (>= 1)
+            if ($uri[1] === 'historystock' && $session->get('level') >= 1) {
+                return;
+            }
+            
             // Restrict other admin pages to level <= 2
             if ($session->get('level') > 2) {
-                return redirect()->to(base_url('admin/dashboard'))->with('pesan', 'Akses ditolak')->with('color', 'danger');
+                return redirect()->to(base_url('admin/dashboard'))
+                       ->with('pesan', 'Akses ditolak')
+                       ->with('color', 'danger');
             }
         }
         
-        // Check if accessing sales area
-        if ($uri[0] === 'sales' && $session->get('level') > 3) {
-            return redirect()->to(base_url('admin/dashboard'))->with('pesan', 'Akses ditolak')->with('color', 'danger');
+        // Check if accessing pegawai area
+        if ($uri[0] === 'pegawai' && $session->get('level') > 3) {
+            return redirect()->to(base_url('admin/dashboard'))
+                   ->with('pesan', 'Akses ditolak')
+                   ->with('color', 'danger');
         }
     }
 

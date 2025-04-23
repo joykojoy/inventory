@@ -5,7 +5,7 @@
             <td># DO</td>
             <td>Customer</td>
             <td>Tanggal</td>
-            <td>Total</td>
+            <td>Nama Barang</td>
             <td>Aksi</td>
         </tr>
     </thead>
@@ -17,11 +17,7 @@
                 <td><?= $d->no_do ?></td>
                 <td><?= $d->customer ?></td>
                 <td><?= date($d->tgl_do) ?></td>
-                <td>
-                    <a href="#" class="text-dark detil-do" data-no_do="<?= $d->no_do ?>" title="click utk lihat perincian">
-                        <?= number_format($d->total, 0, ',', '.') ?>
-                    </a>
-                </td>
+                <td><?= $d->nama_brg ?></td>
                 <td>
                     <button type="button" class="btn btn-outline-success btn-edit-brgkeluar" data-no_do="<?= $d->no_do ?>" title="Edit">
                         <i class="bi bi-pencil-square"></i>
