@@ -370,16 +370,17 @@
             }
         })
     })
-    // simpan barang
+
+    // simpan barang (tambah)
     $(document).on("submit", "#form-add-barang", function(e) {
-        e.preventDefault()
+        e.preventDefault();
+        // kode_lokasi otomatis ikut jika ada di form
         $.ajax({
             url: $(this).attr("action"),
             data: $(this).serialize(),
             method: "post",
             dataType: "json",
             success: function(responds) {
-                console.log(responds)
                 if (responds.status) {
                     window.location.href = "/admin/master_barang";
                 } else {
@@ -395,6 +396,7 @@
             }
         });
     })
+
     // form edit barang
     $(".btn-edit-barang").on("click", function() {
         let kode_barang = $(this).data('kode_barang')
@@ -411,9 +413,11 @@
             }
         })
     })
-    // submit update barang
+
+    // submit update barang (edit)
     $(document).on("submit", "#form-edit-barang", function(e) {
-        e.preventDefault()
+        e.preventDefault();
+        // kode_lokasi otomatis ikut jika ada di form
         $.ajax({
             url: $(this).attr("action"),
             data: $(this).serialize(),
@@ -435,6 +439,7 @@
             }
         });
     })
+
     // aktifkan barang
     $(".btn-aktifkan-barang").on("click", function() {
         let barang = $(this).data("barang");
@@ -868,20 +873,15 @@
                         text: responds.psn
                     });
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: responds.psn
-                    });
+                    $.each(responds.errors, function(key, value) {
+                        $('[name="' + key + '"]').addClass('is-invalid')
+                        $('[name="' + key + '"]').next().text(value)
+                        if (value == "") {
+                            $('[name="' + key + '"]').removeClass('is-invalid')
+                            $('[name="' + key + '"]').addClass('is-valid')
+                        }
+                    })
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Terjadi kesalahan pada server'
-                });
             }
         });
     })
@@ -1320,13 +1320,15 @@
     })
     // simpan input ke tabel temp brg keluar
     $("#add-itemTempKeluar").click(function() {
-        let noDO = $("#no_input-do").val()
-        let customer = $("#customer").val()
-        let tglkeluar = $("#tglkeluar").val()
-        let kodeBarangKeluar = $("#kode_brg_keluar").val()
-        let namaBarangKeluar = $("#nama_brg_keluar").val()
-        let jumlahBarangKeluar = $("#jumlah_brg_keluar").val()
-        let hrg = $("#hrg").val()
+        let noDO = $("#no_input-do").val();
+        let customer = $("#customer").val();
+        let tglkeluar = $("#tglkeluar").val(); // Ambil tanggal dari input manual
+        let kodeBarangKeluar = $("#kode_brg_keluar").val();
+        let namaBarangKeluar = $("#nama_brg_keluar").val();
+        let jumlahBarangKeluar = $("#jumlah_brg_keluar").val();
+        let keterangan = $("#keterangan_brg_keluar").val(); // <-- ambil keterangan
+        let hrg = $("#hrg").val();
+
         if (noDO.length == 0) {
             Swal.fire({
                 icon: 'warning',
@@ -1351,23 +1353,30 @@
                 title: 'Peringatan',
                 text: 'Jumlah barang belum diisi',
             })
-        } 
-        else {
+        } else if (tglkeluar.length == 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Tanggal keluar belum diisi',
+            })
+        } else {
             $.ajax({
                 url: "/admin/barangkeluar/simpan_detilbarang",
                 data: {
                     noDO: noDO,
                     customer: customer,
+                    tglkeluar: tglkeluar, // Kirim tanggal ke backend
                     kodeBarangKeluar: kodeBarangKeluar,
                     jumlahBarangKeluar: jumlahBarangKeluar,
-                    hrg: hrg
+                    hrg: hrg,
+                    keterangan: keterangan // <-- kirim keterangan
                 },
                 method: "post",
                 dataType: "json",
                 success: function(responds) {
                     if (responds.status) {
-                        data_temp_keluar()
-                        kosongkan_keluar()
+                        data_temp_keluar();
+                        kosongkan_keluar();
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil',
@@ -1376,7 +1385,7 @@
                     }
                 }
             });
-            $("#kode_brg_keluar").focus()
+            $("#kode_brg_keluar").focus();
         }
     })
     // simpan entri brg keluar ke tabel brg keluar
@@ -1845,8 +1854,8 @@
                     } else {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error',
-                            text: response.message || 'Terjadi kesalahan'
+                            title: 'Gagal',
+                            text: response.psn
                         });
                     }
                 },
@@ -1932,20 +1941,15 @@
                         text: responds.psn
                     });
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: responds.psn
-                    });
+                    $.each(responds.errors, function(key, value) {
+                        $('[name="' + key + '"]').addClass('is-invalid')
+                        $('[name="' + key + '"]').next().text(value)
+                        if (value == "") {
+                            $('[name="' + key + '"]').removeClass('is-invalid')
+                            $('[name="' + key + '"]').addClass('is-valid')
+                        }
+                    })
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Terjadi kesalahan pada server'
-                });
             }
         });
     });
@@ -1990,4 +1994,39 @@
             $("#kode_brg_keluar").trigger('change');
         }
     });
+
+    $('#export-excel').on('click', function() {
+    const tglAwal = $('#tglawal').val();
+    const tglAkhir = $('#tglakhir').val();
+    
+    if (!tglAwal || !tglAkhir) {
+        alert('Please select both start and end dates');
+        return;
+    }
+    
+    // Format dates for URL
+    const formatDate = (dateStr) => {
+        const d = new Date(dateStr);
+        return d.toISOString().split('T')[0];
+    };
+    
+    const url = `/admin/barangkeluar/excel/${formatDate(tglAwal)}/${formatDate(tglAkhir)}/brg_out`;
+    window.location.href = url;
+});
+</script>
+<?php if (session()->get('level') == 'admin') : ?>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" integrity="sha384-8n8f8g8g8h8f8g8h8f8g8h8f8g8h8f8g8h8f8g8h8f8g8h8f8g8h8f8g8h8f8" crossorigin="anonymous"></script>
+<?php endif; ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi DataTable untuk semua tabel dengan id="table"
+    let tables = document.querySelectorAll('table#table');
+    tables.forEach(function(table) {
+        if (typeof simpleDatatables !== 'undefined') {
+            new simpleDatatables.DataTable(table);
+        } else if (typeof $ !== 'undefined' && typeof $.fn.DataTable !== 'undefined') {
+            $(table).DataTable();
+        }
+    });
+});
 </script>

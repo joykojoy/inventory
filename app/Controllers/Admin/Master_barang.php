@@ -17,13 +17,32 @@ class Master_barang extends BaseController
         $this->validation = \Config\Services::validation();
         $this->session = \Config\Services::session();
     }
+    
     public function index()
     {
-        // Build query
-        $query = $this->barangModel->getBarang();
+        // Get search keyword from request
+        $keyword = $this->request->getGet('search');
         
-        // Setup pagination
-        $result = $this->setupPagination($query);
+        // We need to modify the BarangModel to handle search
+        // First let's check if we have a search term
+        if (!empty($keyword)) {
+            // Create a custom model instance and build the query with search
+            $builder = $this->barangModel->table('barang')
+                ->select('barang.*, satuan.nama as nama_satuan, group.nama as nama_group, barang.nama as nama_barang')
+                ->join('satuan', 'satuan.id = barang.satuan')
+                ->join('group', 'group.kode = barang.induk')
+                ->like('barang.kode', $keyword)
+                ->orLike('barang.nama', $keyword)
+                ->orLike('group.nama', $keyword)
+                ->orLike('satuan.nama', $keyword)
+                ->orLike('barang.kode_lokasi', $keyword);
+                
+            // Use the builder for pagination
+            $result = $this->setupPagination($builder);
+        } else {
+            // No search term, use the standard getBarang method
+            $result = $this->setupPagination($this->barangModel->getBarang());
+        }
         
         $data = [
             'data' => $result['data'],
@@ -36,10 +55,13 @@ class Master_barang extends BaseController
             'currentPage' => $result['pager']['currentPage'],
             'perPage' => $result['pager']['perPage'],
             'total' => $result['pager']['total'],
-            'totalPages' => $result['pager']['totalPages']
+            'totalPages' => $result['pager']['totalPages'],
+            // Pass search keyword back to view
+            'keyword' => $keyword
         ];
         return view('admin/masbarang', $data);
     }
+    
     public function tambah()
     {
         if (!$this->request->isAJAX()) {
@@ -52,6 +74,7 @@ class Master_barang extends BaseController
         $hasil = view('modal/fadd_barang', $data);
         echo json_encode($hasil);
     }
+    
     public function edit()
     {
         if (!$this->request->isAJAX()) {
@@ -66,6 +89,7 @@ class Master_barang extends BaseController
         $hasil = view('modal/fedit_barang', $data);
         echo json_encode($hasil);
     }
+    
     public function simpan()
     {
         if (!$this->request->isAJAX()) {
@@ -80,7 +104,8 @@ class Master_barang extends BaseController
                 'satuan' => (int)$this->request->getPost('satuan'),
                 'status' => 1,
                 'min' => (int)($this->request->getPost('min') ?? 0),
-                'harga' => (float)($this->request->getPost('harga') ?? 0)
+                'harga' => (float)($this->request->getPost('harga') ?? 0),
+                'kode_lokasi' => $this->request->getPost('kode_lokasi'),
             ];
 
             // Validate data
@@ -110,6 +135,7 @@ class Master_barang extends BaseController
             ]);
         }
     }
+    
     public function update()
     {
         if (!$this->request->isAJAX()) {
@@ -125,7 +151,8 @@ class Master_barang extends BaseController
                 'nama' => $this->request->getPost('nama'),
                 'satuan' => (int)$this->request->getPost('satuan'),
                 'min' => (int)($this->request->getPost('min') ?? 0),
-                'harga' => (float)($this->request->getPost('harga') ?? 0)
+                'harga' => (float)($this->request->getPost('harga') ?? 0),
+                'kode_lokasi' => $this->request->getPost('kode_lokasi'),
             ];
 
             // Validate data
@@ -155,6 +182,7 @@ class Master_barang extends BaseController
             ]);
         }
     }
+    
     public function aktifkan()
     {
         if (!$this->request->isAJAX()) {
@@ -175,6 +203,7 @@ class Master_barang extends BaseController
             echo json_encode(['status' => TRUE]);
         }
     }
+    
     public function nonaktifkan()
     {
         if (!$this->request->isAJAX()) {
@@ -195,6 +224,7 @@ class Master_barang extends BaseController
             echo json_encode(['status' => TRUE]);
         }
     }
+    
     public function fhapus()
     {
         if (!$this->request->isAJAX()) {

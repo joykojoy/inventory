@@ -104,6 +104,29 @@ class Dashboard extends BaseController
             ]
         ];
 
+        // Get top 5 items for incoming goods
+        $topIncoming = $this->barangMasukModel->select('barang.nama as nama_brg, SUM(detil_brgmasuk.qtt) as total')
+            ->join('detil_brgmasuk', 'barangmasuk.no_faktur = detil_brgmasuk.no_faktur')
+            ->join('barang', 'detil_brgmasuk.kode_brg = barang.kode')
+            ->groupBy('barang.kode')
+            ->orderBy('total', 'DESC')
+            ->limit(5)
+            ->get()
+            ->getResultArray();
+
+        // Get top 5 items for outgoing goods 
+        $topOutgoing = $this->barangKeluarModel->select('barang.nama as nama_brg, SUM(detil_brgkeluar.qtt) as total')
+            ->join('detil_brgkeluar', 'barangkeluar.no_do = detil_brgkeluar.no_do')
+            ->join('barang', 'detil_brgkeluar.kode_brg = barang.kode')
+            ->groupBy('barang.kode')
+            ->orderBy('total', 'DESC')
+            ->limit(5)
+            ->get()
+            ->getResultArray();
+
+        $data['topIncoming'] = $topIncoming;
+        $data['topOutgoing'] = $topOutgoing;
+
         return view('admin/dashboard', $data);
     }
 }

@@ -1,4 +1,5 @@
-<table class="table table-light table-striped" id="table">
+<div class="table-responsive">
+    <table class="table table-light table-striped" id="table">
     <thead>
         <tr>
             <td>No</td>

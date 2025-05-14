@@ -81,6 +81,8 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], function($rout
     $routes->post('master_barang/delete', 'Master_barang::delete');
     $routes->post('master_barang/aktifkan', 'Master_barang::aktifkan');
     $routes->post('master_barang/nonaktifkan', 'Master_barang::nonaktifkan');
+    $routes->get('admin/barangkeluar/excel/(:any)/(:any)/(:any)', 'Admin\Barangkeluar::excel/$1/$2/$3');
+    $routes->get('barangmasuk/excel/(:any)/(:any)/(:any)', 'Barangmasuk::excel/$1/$2/$3');
 });
 $routes->group('admin', ['filter' => 'auth'], function($routes) {
     $routes->post('master_barang/fhapus', 'Admin\Master_barang::fhapus');
@@ -101,7 +103,7 @@ $routes->get('/admin/master_satuan/nonaktifkan', 'Admin\Master_satuan::nonaktifk
 $routes->get('/admin/master_satuan/aktifkan', 'Admin\Master_satuan::aktifkan');
 $routes->get('/admin/master_satuan/fhapus', 'Admin\Master_satuan::fhapus');
 $routes->post('/admin/master_satuan/delete', 'Admin\Master_satuan::delete');
-// admin master group barang
+// admin master group
 $routes->get('/admin/mangroup', 'Admin\Mangroup::index');
 $routes->get('/admin/mangroup/tambah', 'Admin\Mangroup::tambah');
 $routes->post('/admin/mangroup/simpan', 'Admin\Mangroup::simpan');
@@ -131,15 +133,25 @@ $routes->post('/admin/barangmasuk/return', 'Admin\Barangmasuk::return');
 $routes->match(['get', 'post'], '/admin/barangmasuk/updateHarga', 'Admin\Barangmasuk::updateHarga');
 $routes->post('/admin/barangmasuk/updateHarga', 'Admin\Barangmasuk::updateHarga');
 
-// admin history stock
-$routes->get('/admin/historystock', 'Admin\Historystock::index');
-$routes->post('/admin/historystock/his_brg/', 'Admin\Historystock::his_brg');
-$routes->get('/admin/historystock/his_brg_pdf/(:any)/(:any)', 'Admin\Historystock::his_brg_pdf/$1/$2');
-$routes->get('/admin/historystock/barangmasuk', 'Admin\Historystock::barangmasuk');
-$routes->get('/admin/historystock/barangkeluar', 'Admin\Historystock::barangkeluar');
-$routes->get('/admin/historystock/ready', 'Admin\Historystock::ready');
-$routes->get('/admin/historystock/listpdf', 'Admin\Historystock::listpdf');
-$routes->get('/admin/historystock/incomingpdf', 'Admin\Historystock::incomingpdf');
+// admin history routes
+$routes->group('admin', ['namespace' => 'App\Controllers\Admin'], function($routes) {
+    $routes->get('historystock', 'Historystock::index');
+    $routes->post('historystock/his_brg/', 'Historystock::his_brg');
+    $routes->get('historystock/his_brg_pdf/(:any)/(:any)', 'Historystock::his_brg_pdf/$1/$2');
+    $routes->get('historystock/barangmasuk', 'Historystock::barangmasuk');
+    $routes->get('historystock/barangkeluar', 'Historystock::barangkeluar');
+    $routes->get('historystock/ready', 'Historystock::ready');
+    $routes->get('historystock/listpdf', 'Historystock::listpdf');
+    $routes->get('historystock/incomingpdf', 'Historystock::incomingpdf');
+    $routes->get('admin/barangkeluar/excel/(:any)/(:any)/(:any)', 'Admin\Barangkeluar::excel/$1/$2/$3');
+    $routes->get('historystock/excel/(:any)/(:any)', 'Historystock::excel/$1/$2');
+
+    // Add these new routes
+    $routes->get('historykeluar/excel', 'Barangkeluar::excel');
+    $routes->get('historykeluar/excel/(:any)/(:any)', 'Barangkeluar::excel/$1/$2');
+    $routes->get('historykeluar/excel/(:segment)/(:segment)/(:segment)', 'Barangkeluar::excel/$1/$2/$3');
+    $routes->get('admin/barangkeluar/excel/(:any)/(:any)/(:any)', 'Admin\Barangkeluar::excel/$1/$2/$3');
+});
 
 // admin dashboard
 $routes->get('/admin/dashboard', 'Admin\Dashboard::index');  // changed from Dashboard to dashboard
@@ -164,6 +176,8 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], function($rout
     $routes->post('barangkeluar/return', 'Barangkeluar::return');
     $routes->post('barangkeluar/getHistory', 'Barangkeluar::getHistory');
     $routes->post('barangkeluar/getBarangNama', 'Barangkeluar::getBarangNama');
+    $routes->get('barangkeluar/excel/(:any)/(:any)/(:any)', 'Barangkeluar::excel/$1/$2/$3');
+    
 });
 
 // sales
@@ -176,7 +190,6 @@ $routes->group('pegawai', ['namespace' => 'App\Controllers\Admin'], function($ro
     $routes->get('historystock/ready', 'Historystock::ready');
     $routes->get('historystock/listpdf', 'Historystock::listpdf');
     $routes->post('historystock/his_brg', 'Historystock::his_brg');
-    $routes->get('historystock/his_brg_pdf/(:segment)/(:segment)/(:segment)', 'Historystock::his_brg_pdf/$1/$2/$3');
 });
 
 /*

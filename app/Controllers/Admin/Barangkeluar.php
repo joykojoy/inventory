@@ -27,12 +27,22 @@ class Barangkeluar extends BaseController
     }
     public function index()
     {
-        // Build query
+        $search = $this->request->getGet('search');
         $query = $this->barangkeluarModel->getBarangKeluar();
-        
+
+        // Filter search jika ada keyword
+        if ($search) {
+            $query = $query->groupStart()
+                ->like('detil_brgkeluar.no_do', $search)
+                ->orLike('detil_brgkeluar.customer', $search)
+                ->orLike('barang.nama', $search)
+                ->orLike('detil_brgkeluar.keterangan', $search)
+                ->groupEnd();
+        }
+
         // Setup pagination
         $result = $this->setupPagination($query);
-        
+
         $data = [
             'data' => $result['data'],
             'level_akses' => $this->session->nama_level,
@@ -44,7 +54,8 @@ class Barangkeluar extends BaseController
             'currentPage' => $result['pager']['currentPage'],
             'perPage' => $result['pager']['perPage'],
             'total' => $result['pager']['total'],
-            'totalPages' => $result['pager']['totalPages']
+            'totalPages' => $result['pager']['totalPages'],
+            'search' => $search // <-- kirim ke view
         ];
         return view('admin/manbrgkeluar', $data);
     }
@@ -101,6 +112,8 @@ class Barangkeluar extends BaseController
         $customer = $this->request->getPost('customer');
         $kodeBarang = $this->request->getPost('kodeBarangKeluar');
         $jumlahBarang = (int)$this->request->getPost('jumlahBarangKeluar');
+        $tglkeluar = $this->request->getPost('tglkeluar');
+        $keterangan = $this->request->getPost('keterangan'); // <-- ambil keterangan dari POST
 
         // Check stock availability
         $currentStock = $this->stockModel->where('kode_brg', $kodeBarang)->first();
@@ -115,10 +128,11 @@ class Barangkeluar extends BaseController
         
         $berhasil = $this->temp_barangkeluarModel->save([
             'no_do' => $noDO,
-            'tgl_do' => date("Y-m-d"),
+            'tgl_do' => $tglkeluar, // <-- gunakan tanggal input user
             'customer' => $customer,
             'kode_brg' => $kodeBarang,
             'qtt' => $jumlahBarang,
+            'keterangan' => $keterangan // <-- simpan keterangan
         ]);
 
         if ($berhasil) {
@@ -191,6 +205,7 @@ class Barangkeluar extends BaseController
                     'customer' => $d->customer,
                     'kode_brg' => $d->kode_brg,
                     'qtt' => $d->qtt,
+                    'keterangan' => $d->keterangan // <-- simpan keterangan
                 ]);
                 $kodeBarangKeluar[$k] = $d->kode_brg;
                 $qttKeluar[$k] = $d->qtt;
@@ -385,5 +400,34 @@ class Barangkeluar extends BaseController
                 echo json_encode(['status' => TRUE]);
             }
         }
+    }
+    public function excel($tglAwal = null, $tglAkhir = null, $typeHistory = 'brg_out')
+    {
+        $tglAwal = $tglAwal ? date('Y-m-d', strtotime($tglAwal)) : date('Y-m-d');
+        $tglAkhir = $tglAkhir ? date('Y-m-d', strtotime($tglAkhir)) : date('Y-m-d');
+
+        // Ambil data dari model, pastikan field sesuai dengan yang dibutuhkan di view
+        $result = $this->mutasiStockModel->getHisBrgKeluar($tglAwal, $tglAkhir);
+
+        // Mapping data agar field sesuai dengan view
+        $data = [];
+        foreach ($result as $row) {
+            $data[] = (object)[
+                'tanggal'        => $row->tgl ?? $row->tanggal ?? '',
+                'no_do'          => $row->no_do ?? '',
+                'customer'       => $row->customer ?? '',
+                'kode_barang'    => $row->kode_brg ?? $row->kode_barang ?? '',
+                'nama_barang'    => $row->nama_brg ?? $row->nama_barang ?? '',
+                'group'          => $row->nama_group ?? $row->group ?? '',
+                'jumlah_keluar'  => $row->qtt_out ?? $row->jumlah ?? 0,
+                'satuan'         => $row->nama_satuan ?? $row->satuan ?? '',
+            ];
+        }
+
+        return view('admin/his_brgkeluar_excel', [
+            'data'    => $data,
+            'tglAwal' => $tglAwal,
+            'tglAkhir'=> $tglAkhir
+        ]);
     }
 }

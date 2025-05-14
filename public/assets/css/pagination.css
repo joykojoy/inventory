@@ -1,6 +1,6 @@
 .pagination-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end; /* ubah dari space-between ke flex-end */
     align-items: center;
     margin-top: 1rem;
     padding: 0.5rem 0;
@@ -9,6 +9,7 @@
 .pagination-info {
     color: #6c757d;
     font-size: 0.875rem;
+    margin-right: auto; /* tambahkan ini agar info tetap di kiri jika dipakai */
 }
 
 .pagination {
@@ -51,6 +52,7 @@
     .pagination-container {
         flex-direction: column;
         gap: 0.5rem;
+        align-items: stretch; /* agar info dan pagination tetap rapi di mobile */
     }
     
     .pagination {

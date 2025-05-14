@@ -64,6 +64,13 @@
                                 <div class="invalid-feedback"></div>
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label for="kode_lokasi" class="col-sm-3 col-form-label">Lokasi</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="kode_lokasi" class="form-control" value="<?= $data->kode_lokasi ?>" required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>

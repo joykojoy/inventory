@@ -18,7 +18,8 @@ class BarangModel extends Model
         'satuan',
         'status',
         'min',
-        'harga'
+        'harga',
+        'kode_lokasi' // <-- tambahkan ini
     ];
     protected $useTimestamps    = false;
 
@@ -40,7 +41,8 @@ class BarangModel extends Model
             barang.min as min_stok, 
             satuan.nama as nama_satuan, 
             group.nama as nama_group, 
-            barang.harga as harga' // Add price selection
+            barang.harga as harga,
+            barang.kode_lokasi as kode_lokasi,'
         );
         if ($kode) {
             return $builder->join('satuan', 'satuan.id = barang.satuan')

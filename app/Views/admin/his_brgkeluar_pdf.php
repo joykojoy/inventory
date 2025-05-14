@@ -61,6 +61,18 @@
             margin-bottom: 10px;
         }
 
+        .excel-btn {
+            float: right;
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            margin-right: 10px;
+        }
+
         .header-info {
             margin-bottom: 20px;
         }
@@ -75,6 +87,10 @@
                 display: none;
             }
 
+            .excel-btn {
+                display: none;
+            }
+
             body {
                 margin: 0;
                 padding: 15px;
@@ -86,6 +102,9 @@
 <body>
     <div class="card">
         <button class="print-btn" onclick="window.print()">Print</button>
+        <button class="excel-btn" onclick="window.location.href='<?= base_url('admin/historykeluar/excel') ?>'">
+            Excel
+        </button>
         <div class="text-center header-info">
             <h3>History Pengeluaran Barang</h3>
             <p>Periode: <?= isset($tglAwal) ? date('d-m-Y', strtotime($tglAwal)) : '' ?>

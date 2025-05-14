@@ -10,7 +10,7 @@ class Temp_barangkeluarModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'object';
-    protected $allowedFields    = ['no_do', 'tgl_do', 'customer', 'kode_brg', 'qtt', 'hrg', 'subtotal'];
+    protected $allowedFields    = ['no_do', 'tgl_do', 'customer', 'kode_brg', 'qtt', 'hrg', 'subtotal', 'keterangan'];
 
     public function getTempBarangkeluar($no_do)
     {

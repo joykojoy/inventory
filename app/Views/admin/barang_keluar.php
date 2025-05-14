@@ -24,8 +24,7 @@ $this->section('content');
                 <div class="col-md-4">
                     <label class="form-label">Tanggal barang keluar</label>
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" value="<?= date('d-M-Y') ?>" id="tglkeluar" readonly>
-                        <button class="btn btn-outline-success" type="button" id="button-addon2"><i class="bi bi-app"></i></button>
+                        <input type="date" class="form-control" id="tglkeluar" value="<?= date('Y-m-d') ?>">
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -58,6 +57,10 @@ $this->section('content');
                         <div class="col-md-4">
                             <label class="form-label">Jumlah Barang</label>
                             <input type="number" class="form-control" id="jumlah_brg_keluar">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Keterangan</label>
+                            <input type="text" class="form-control" id="keterangan_brg_keluar" placeholder="Keterangan (opsional)">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Aksi</label>

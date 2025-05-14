@@ -15,9 +15,19 @@ class Mangroup extends BaseController
     }
     public function index()
     {
+        // Get search keyword from request
+        $keyword = $this->request->getGet('search');
+        
         // Build query using Query Builder
-        $query = $this->groupModel->select('*')
-                                 ->orderBy('nama', 'ASC');
+        $query = $this->groupModel->select('*');
+        
+        // Add search condition if keyword exists
+        if (!empty($keyword)) {
+            $query->like('nama', $keyword)
+                  ->orLike('kode', $keyword);
+        }
+        
+        $query->orderBy('nama', 'ASC');
         
         // Setup pagination
         $result = $this->setupPagination($query);
@@ -33,7 +43,9 @@ class Mangroup extends BaseController
             'currentPage' => $result['pager']['currentPage'],
             'perPage' => $result['pager']['perPage'],
             'total' => $result['pager']['total'],
-            'totalPages' => $result['pager']['totalPages']
+            'totalPages' => $result['pager']['totalPages'],
+            // Pass search keyword back to view
+            'keyword' => $keyword
         ];
         return view('admin/mangroup', $data);
     }

@@ -7,6 +7,8 @@ use App\Models\{BarangModel, BarangmasukModel, Temp_barangmasukModel, Detil_brgm
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class Barangmasuk extends BaseController
 {
@@ -36,8 +38,18 @@ class Barangmasuk extends BaseController
 
     public function index()
     {
+        // Get search keyword from request
+        $keyword = $this->request->getGet('search');
+        
         // Build query
         $query = $this->barangmasukModel->getBarangMasuk();
+        
+        // Add search condition if keyword exists
+        if (!empty($keyword)) {
+            $query->like('no_faktur', $keyword)
+                  ->orLike('tgl_faktur', $keyword)
+                  ->orLike('supplier', $keyword);
+        }
         
         // Setup pagination
         $result = $this->setupPagination($query);
@@ -53,7 +65,9 @@ class Barangmasuk extends BaseController
             'currentPage' => $result['pager']['currentPage'],
             'perPage' => $result['pager']['perPage'],
             'total' => $result['pager']['total'],
-            'totalPages' => $result['pager']['totalPages']
+            'totalPages' => $result['pager']['totalPages'],
+            // Pass search keyword back to view
+            'keyword' => $keyword
         ];
         
         return view('admin/manbrgmasuk', $data);
@@ -113,11 +127,11 @@ class Barangmasuk extends BaseController
         if ($barang && (float)$barang->harga !== (float)$hpp) {
             $this->barangModel->update($kodeBarang, ['harga' => $hpp]);
         }
-
+        $tglreceived = $this->request->getPost('tglreceived'); // <-- AMBIL DARI POST
         // Save to temp table
         $berhasil = $this->temp_barangmasukModel->save([
             'no_faktur' => $noFaktur,
-            'tgl_faktur' => date("Y-m-d"),
+            'tgl_faktur' => $tglreceived, // <-- GUNAKAN INI
             'supplier' => $supplier,
             'kode_brg' => $kodeBarang,
             'qtt' => $jumlahBarang,
@@ -177,28 +191,32 @@ class Barangmasuk extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
-        // koneksi DB lokal 
         $db = \Config\Database::connect();
         $db->transBegin();
 
         try {
             $noFaktur = $this->request->getPost('noFaktur');
-            
+            log_message('debug', 'SIMPAN: noFaktur=' . $noFaktur);
+
             // Check for duplicate faktur
             if ($this->barangmasukModel->where('no_faktur', $noFaktur)->first()) {
+                log_message('error', 'SIMPAN: Nomor faktur sudah ada');
                 throw new \Exception('Nomor faktur sudah ada dalam database');
             }
 
             $dataTemp = $this->temp_barangmasukModel->getTempBarangMasuk($noFaktur)->getResult();
+            log_message('debug', 'SIMPAN: dataTemp=' . print_r($dataTemp, true));
+
             if (empty($dataTemp)) {
+                log_message('error', 'SIMPAN: Data temp tidak ditemukan');
                 throw new \Exception('Data tidak ditemukan');
             }
 
             foreach ($dataTemp as $d) {
+                log_message('debug', 'SIMPAN: Insert detil_brgmasuk: ' . print_r($d, true));
                 // Update product price if different
                 $barang = $this->barangModel->find($d->kode_brg);
                 if ($barang) {
-                    // Access object properties correctly
                     if ((float)$barang->harga !== (float)$d->hpp) {
                         $this->barangModel->update($d->kode_brg, ['harga' => $d->hpp]);
                     }
@@ -239,6 +257,13 @@ class Barangmasuk extends BaseController
             }
 
             // Save header transaction
+            log_message('debug', 'SIMPAN: Insert barangmasuk: ' . print_r([
+                'no_faktur' => $noFaktur,
+                'tgl_faktur' => $dataTemp[0]->tgl_faktur,
+                'supplier' => $dataTemp[0]->supplier,
+                'total' => array_sum(array_column((array)$dataTemp, 'subtotal'))
+            ], true));
+
             $this->barangmasukModel->insert([
                 'no_faktur' => $noFaktur,
                 'tgl_faktur' => $dataTemp[0]->tgl_faktur,
@@ -248,11 +273,13 @@ class Barangmasuk extends BaseController
 
             if ($db->transStatus() === false) {
                 $db->transRollback();
+                log_message('error', 'SIMPAN: DB transStatus false');
                 $output = ['status' => false, 'psn' => 'Gagal simpan'];
             } else {
                 $db->transCommit();
                 // Clear temp data after successful transaction
                 $this->temp_barangmasukModel->where('no_faktur', $noFaktur)->delete();
+                log_message('debug', 'SIMPAN: Sukses simpan dan hapus temp');
                 $output = ['status' => true, 'psn' => 'Sukses simpan'];
             }
 
@@ -260,6 +287,7 @@ class Barangmasuk extends BaseController
 
         } catch (\Exception $e) {
             $db->transRollback();
+            log_message('error', 'SIMPAN: Exception: ' . $e->getMessage());
             echo json_encode([
                 'status' => false,
                 'psn' => 'Gagal simpan: ' . $e->getMessage()
@@ -503,5 +531,58 @@ class Barangmasuk extends BaseController
                 'message' => $e->getMessage()
             ]);
         }
+    }
+
+    public function scanBarcode()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => 'Invalid request'
+            ]);
+        }
+
+        try {
+            $barcode = $this->request->getPost('barcode');
+            
+            if (empty($barcode)) {
+                throw new \Exception('Barcode tidak boleh kosong');
+            }
+            
+            // Get barang data by barcode (kode)
+            $barang = $this->barangModel->getBarang($barcode)->getRow();
+            
+            if (!$barang) {
+                throw new \Exception("Barang dengan barcode {$barcode} tidak ditemukan");
+            }
+
+            return $this->response->setJSON([
+                'status' => true,
+                'data' => $barang
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Scan barcode error: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function excel($tglAwal = null, $tglAkhir = null, $typeHistory = 'brg_in')
+    {
+        $tglAwal = $tglAwal ? date('Y-m-d', strtotime($tglAwal)) : date('Y-m-d');
+        $tglAkhir = $tglAkhir ? date('Y-m-d', strtotime($tglAkhir)) : date('Y-m-d');
+
+        // Ambil data barang masuk dari model
+        $data = $this->mutasiStockModel->getHisBrgMasuk($tglAwal, $tglAkhir);
+
+        // Kirim ke view Excel
+        return view('admin/his_brgmasuk_excel', [
+            'data' => $data,
+            'tglAwal' => $tglAwal,
+            'tglAkhir' => $tglAkhir
+        ]);
     }
 }

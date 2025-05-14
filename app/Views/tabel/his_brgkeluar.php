@@ -7,8 +7,11 @@
     </div>
     <div class="col text-end">
         <?php if(!empty($tglAwal) && !empty($tglAkhir)): ?>
-            <a href="/admin/historystock/his_brg_pdf/<?= $tglAwal ?>/<?= $tglAkhir ?>/brg_out" target="_blank" class="btn btn-sm btn-danger">
+            <a href="/admin/historystock/his_brg_pdf/<?= $tglAwal ?>/<?= $tglAkhir ?>/brg_out" target="_blank" class="btn btn-sm btn-danger me-2">
                 <i class="bi bi-printer me-2"></i>Print
+            </a>
+            <a href="<?= base_url('admin/barangkeluar/excel/' . $tglAwal . '/' . $tglAkhir . '/brg_out') ?>" class="btn btn-success">
+                <i class="bi bi-file-excel me-2"></i>Excel
             </a>
         <?php endif; ?>
     </div>

@@ -6,6 +6,7 @@
             <td>Kode</td>
             <td>Nama Barang</td>
             <td>Satuan</td>
+            <td>Lokasi</td>
             <td>Min Stok</td>
             <td>Harga</td>
             <td>Status</td>
@@ -21,6 +22,7 @@
                 <td><?= $d->kode ?></td>
                 <td><?= $d->nama_barang ?></td>
                 <td><?= $d->nama_satuan ?></td>
+                <td><?= $d->kode_lokasi ?></td>
                 <td><?= $d->min_stok ?></td>
                 <td><?= number_format($d->harga, 2, ',', '.') ?></td>
                 <td>

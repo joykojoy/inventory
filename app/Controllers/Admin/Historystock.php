@@ -40,60 +40,64 @@ class Historystock extends BaseController
         return view('admin/history_brg', $data);
     }
     public function his_brg()
-    {
-        if (!$this->request->isAJAX()) {
-            return $this->response->setStatusCode(404);
-        }
-
-        try {
-            $tglAwal = $this->request->getPost('tglAwal');
-            $tglAkhir = $this->request->getPost('tglAkhir');
-            $opsi = $this->request->getPost('opsi');
-
-            // Debug log
-            log_message('debug', "his_brg called with dates: {$tglAwal} to {$tglAkhir}, opsi: {$opsi}");
-
-            // Validate dates
-            if (empty($tglAwal) || empty($tglAkhir)) {
-                throw new \Exception('Tanggal awal dan akhir harus diisi');
-            }
-
-            // Get data based on opsi
-            switch($opsi) {
-                case 'brg_in':
-                    $resultData = $this->mutasiStockModel->getHisBrgMasuk($tglAwal, $tglAkhir);
-                    $view = 'tabel/his_brgmasuk';
-                    break;
-                case 'brg_out':
-                    $resultData = $this->mutasiStockModel->getHisBrgKeluar($tglAwal, $tglAkhir);
-                    $view = 'tabel/his_brgkeluar';
-                    break;
-                default:
-                    $resultData = $this->mutasiStockModel->getHisBrg($tglAwal, $tglAkhir);
-                    $view = 'tabel/his_brg';
-            }
-
-            $data = [
-                'data' => $resultData,
-                'tglAwal' => $tglAwal,
-                'tglAkhir' => $tglAkhir
-            ];
-
-            $viewContent = view($view, $data);
-
-            return $this->response->setJSON([
-                'status' => true,
-                'data' => $viewContent
-            ]);
-
-        } catch (\Exception $e) {
-            log_message('error', '[History] Error: ' . $e->getMessage());
-            return $this->response->setJSON([
-                'status' => false,
-                'message' => $e->getMessage()
-            ])->setStatusCode(500);
-        }
+{
+    if (!$this->request->isAJAX()) {
+        return $this->response->setStatusCode(404);
     }
+
+    try {
+        $tglAwal = $this->request->getPost('tglAwal');
+        $tglAkhir = $this->request->getPost('tglAkhir');
+        $opsi = $this->request->getPost('opsi');
+
+        // Debug log
+        log_message('debug', "his_brg called with dates: {$tglAwal} to {$tglAkhir}, opsi: {$opsi}");
+
+        // Validate dates
+        if (empty($tglAwal) || empty($tglAkhir)) {
+            throw new \Exception('Tanggal awal dan akhir harus diisi');
+        }
+
+        // Get data based on opsi
+        switch($opsi) {
+            case 'brg_in':
+                $resultData = $this->mutasiStockModel->getHisBrgMasuk($tglAwal, $tglAkhir);
+                $view = 'tabel/his_brgmasuk';
+                $excelRoute = 'barangmasuk/excel';
+                break;
+            case 'brg_out':
+                $resultData = $this->mutasiStockModel->getHisBrgKeluar($tglAwal, $tglAkhir);
+                $view = 'tabel/his_brgkeluar';
+                $excelRoute = 'barangkeluar/excel';
+                break;
+            default:
+                $resultData = $this->mutasiStockModel->getHisBrg($tglAwal, $tglAkhir);
+                $view = 'tabel/his_brg';
+                $excelRoute = 'historystock/excel';
+        }
+
+        $data = [
+            'data' => $resultData,
+            'tglAwal' => $tglAwal,
+            'tglAkhir' => $tglAkhir,
+            'excelRoute' => $excelRoute
+        ];
+
+        $viewContent = view($view, $data);
+
+        return $this->response->setJSON([
+            'status' => true,
+            'data' => $viewContent
+        ]);
+
+    } catch (\Exception $e) {
+        log_message('error', '[History] Error: ' . $e->getMessage());
+        return $this->response->setJSON([
+            'status' => false,
+            'message' => $e->getMessage()
+        ])->setStatusCode(500);
+    }
+}
     public function his_brgmasuk()
     {
         if (!$this->request->isAJAX()) {
@@ -237,4 +241,18 @@ class Historystock extends BaseController
         
         return view('admin/history', $data);
     }
+    public function excel($tglAwal = null, $tglAkhir = null)
+{
+    $tglAwal = $tglAwal ? date('Y-m-d', strtotime($tglAwal)) : date('Y-m-d');
+    $tglAkhir = $tglAkhir ? date('Y-m-d', strtotime($tglAkhir)) : date('Y-m-d');
+
+    // Ganti dengan method yang benar
+    $data = $this->mutasiStockModel->getHisBrg($tglAwal, $tglAkhir);
+
+    return view('admin/his_brg_excel', [
+        'data'    => $data,
+        'tglAwal' => $tglAwal,
+        'tglAkhir'=> $tglAkhir
+    ]);
+}
 }

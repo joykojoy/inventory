@@ -10,12 +10,28 @@ $this->section('content');
             <h5 class="card-title">Data Master Group/Kelompok Barang</h5>
         </div>
         <div class="card-body">
-            <button class="btn bg-indigo text-light btn-add-group mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"></path>
-                </svg>
-                Tambah Group
-            </button>
+            <div class="row mb-3">
+                <div class="col-6">
+                    <button class="btn bg-indigo text-light btn-add-group mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"></path>
+                        </svg>
+                        Tambah Group
+                    </button>
+                </div>
+                <div class="col-6">
+                    <form action="" method="get" id="searchForm" class="d-flex justify-content-end">
+                        <div style="width: 33%;">
+                            <input type="text" name="search" id="searchInput" class="form-control"
+                                placeholder="Cari group..." value="<?= isset($keyword) ? $keyword : '' ?>"
+                                oninput="handleSearch(this.value)">
+                        </div>
+                        <?php if(isset($keyword) && !empty($keyword)): ?>
+                            <a href="<?= site_url('admin/mangroup') ?>" class="btn btn-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
+                </div>
+            </div>
             <div class="table-responsive">
                 <?= $this->include('tabel/data_group') ?>
                 <div class="div-group"></div>
@@ -58,10 +74,14 @@ $this->section('content');
         </div>
     </div>
 </section>
-<script src="/assets/vendors/simple-datatables/simple-datatables.js"></script>
 <script>
-    // Simple Datatable
-    let table = document.querySelector('#table');
-    let dataTable = new simpleDatatables.DataTable(table);
+    let searchTimeout;
+    
+    function handleSearch(value) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            document.getElementById('searchForm').submit();
+        }, 500);
+    }
 </script>
 <?php $this->endSection() ?>

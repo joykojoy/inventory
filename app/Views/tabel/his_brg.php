@@ -10,12 +10,20 @@ if (!empty($data)) {
 </div>
 <div class="row mt-4">
     <div class="col text-start">
-        <h5 class="card-title">History Stock Barang</h5>
+        <h5 class="card-title">Stock Barang</h5>
+        <?php if(!empty($tglAwal) && !empty($tglAkhir)): ?>
+            <p class="text-muted">Periode: <?= date('d-m-Y', strtotime($tglAwal)) ?> s/d <?= date('d-m-Y', strtotime($tglAkhir)) ?></p>
+        <?php endif; ?>
     </div>
     <div class="col text-end">
-        <a href="/admin/historystock/his_brg_pdf/<?= $tglAwal ?>/<?= $tglAkhir ?>/all" target="_blank" class="btn btn-sm btn-danger">
-            <i class="bi bi-printer me-2"></i>Print
-        </a>
+        <?php if(!empty($tglAwal) && !empty($tglAkhir)): ?>
+            <a href="<?= base_url('admin/historystock/his_brg_pdf/' . $tglAwal . '/' . $tglAkhir) ?>" target="_blank" class="btn btn-sm btn-danger">
+                <i class="bi bi-printer me-2"></i>Print
+            </a>
+            <a href="<?= base_url('admin/historystock/excel/' . $tglAwal . '/' . $tglAkhir) ?>" class="btn btn-success">
+                <i class="bi bi-file-excel me-2"></i>Excel
+            </a>
+        <?php endif; ?>
     </div>
 </div>
 <div id="history-brg">
